@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Movie Night</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#0e0e12;
+  --paper:#f5f2eb;
+  --paper2:#ede9e0;
+  --paper3:#e0dbd0;
+  --line:#c8c2b4;
+  --mute:#9a9488;
+  --ghost:#b8b2a6;
+
+  --red:#d63e2a;
+  --blue:#2a6dd6;
+  --grn:#2ab85a;
+  --ylw:#d6a42a;
+  --pur:#7a2ad6;
+
+  --dot:8px;
+  --r:2px;
+}
+html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;}
+body{min-height:100vh;overflow-x:hidden;}
+
+/* ─ screens ─ */
+.scr{display:none;min-height:100vh;flex-direction:column;}
+.scr.on{display:flex;}
+
+/* ─ map bg ─ */
+.map-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.map-bg svg{width:100%;height:100%;opacity:.12;}
+
+/* ─ content above map ─ */
+.above{position:relative;z-index:1;}
+
+/* ─ metro line decorations ─ */
+.metro-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:2.5px solid var(--ink);background:var(--paper);flex-shrink:0;}
+.metro-dot.filled{background:var(--ink);}
+.line-h{height:3px;background:var(--ink);flex:1;}
+.line-v{width:3px;background:var(--ink);}
+
+/* ─ typography ─ */
+.mono{font-family:'DM Mono',monospace;}
+.label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);}
+.big-num{font-family:'DM Mono',monospace;font-size:3rem;font-weight:300;line-height:1;letter-spacing:-.03em;}
+
+/* ─ buttons ─ */
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:.04em;cursor:pointer;transition:opacity .15s,transform .1s;width:100%;}
+.btn:hover{opacity:.82;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.25;cursor:not-allowed;}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:var(--mute);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;width:100%;}
+.btn-ghost:hover{border-color:var(--ink);color:var(--ink);}
+.btn-col{display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:var(--r);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s,transform .1s;width:100%;}
+.btn-col:hover{opacity:.82;}
+.btn-col:active{transform:scale(.97);}
+
+/* ─ panel ─ */
+.panel{background:var(--paper);border:1.5px solid var(--ink);border-radius:var(--r);}
+.panel-pad{padding:1.5rem;}
+
+/* ─ divider ─ */
+.div-line{height:1.5px;background:var(--ink);margin:1.25rem 0;}
+
+/* ═══════════════════════
+   LOBBY (HOST)
+═══════════════════════ */
+#sLobby{background:var(--paper);}
+.lobby-wrap{width:100%;max-width:680px;margin:0 auto;padding:2rem 1.5rem;display:flex;flex-direction:column;gap:1.25rem;}
+
+.brand-row{display:flex;align-items:center;gap:12px;}
+.brand-stripe{width:3px;height:28px;background:var(--red);}
+.brand-stripe2{width:3px;height:28px;background:var(--blue);}
+.brand-title{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;letter-spacing:.04em;}
+.brand-phase{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);background:var(--paper2);border:1.5px solid var(--line);padding:4px 10px;border-radius:var(--r);}
+
+.qr-card{display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:center;}
+.qr-frame{background:#fff;padding:6px;border-radius:var(--r);width:108px;height:108px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid var(--ink);}
+.qr-right h3{font-size:15px;font-weight:500;margin-bottom:5px;}
+.qr-right p{font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:.6rem;}
+.qr-url{font-family:'DM Mono',monospace;font-size:10px;color:var(--mute);word-break:break-all;background:var(--paper2);padding:7px 10px;border-radius:var(--r);border:1px solid var(--line);}
+
+/* timer */
+.timer-card{}
+.timer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;}
+.timer-track{height:4px;background:var(--paper3);border-radius:2px;overflow:hidden;}
+.timer-fill{height:100%;background:var(--ink);border-radius:2px;transition:width .9s linear;}
+.timer-time{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:300;letter-spacing:-.02em;}
+
+/* stats */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.stat-cell{display:flex;flex-direction:column;gap:4px;}
+
+/* feed */
+.feed-head{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;}
+.feed-items{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;}
+.feed-row{display:flex;align-items:baseline;gap:10px;padding:8px 10px;background:var(--paper2);border-radius:var(--r);}
+.feed-name{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--ink);min-width:80px;flex-shrink:0;}
+.feed-movies{font-size:12px;color:var(--mute);}
+.feed-empty{font-size:12px;color:var(--ghost);font-style:italic;padding:8px 0;}
+
+.act-row{display:grid;grid-template-columns:1fr auto;gap:.6rem;}
+
+/* ═══════════════════════
+   HOST VOTE
+═══════════════════════ */
+#sHostVote{flex-direction:row;background:var(--paper);}
+.hv-rail{width:260px;min-width:220px;border-right:1.5px solid var(--ink);display:flex;flex-direction:column;padding:1.5rem;gap:1.5rem;}
+.hv-brand{display:flex;align-items:center;gap:8px;}
+.hv-brand .brand-stripe{width:3px;height:20px;}
+.hv-brand h2{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;letter-spacing:.04em;}
+.hv-main{flex:1;display:flex;flex-direction:column;padding:2rem 2.5rem;overflow:hidden;}
+
+/* ring */
+.ring-wrap{position:relative;width:80px;height:80px;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:400;letter-spacing:-.02em;}
+
+/* bars */
+.bars-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2.5rem;}
+.bar-row{}
+.bar-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.bar-title{font-size:1rem;font-weight:500;}
+.bar-score{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:300;letter-spacing:-.03em;}
+.bar-track{height:6px;background:var(--paper3);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.34,1.56,.64,1);min-width:6px;}
+
+.vote-stat{background:var(--paper2);border:1.5px solid var(--line);border-radius:var(--r);padding:1rem;}
+.vote-stat .label{margin-bottom:4px;}
+
+/* ═══════════════════════
+   REVEAL
+═══════════════════════ */
+#sReveal{align-items:center;justify-content:center;background:var(--paper);padding:2rem 1rem;}
+.reveal-wrap{width:100%;max-width:480px;}
+.rev-top{text-align:center;margin-bottom:2rem;}
+.rev-icon{font-size:3rem;margin-bottom:.5rem;display:block;}
+.rev-winner{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:300;letter-spacing:-.02em;line-height:1.25;margin-bottom:1rem;}
+.rev-sub{font-size:12px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;}
+.rev-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
+.rev-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);}
+.rev-row.rank1{background:var(--ink);color:var(--paper);}
+.rev-row.rank2{background:var(--paper2);border:1.5px solid var(--ink);}
+.rev-row.rank3{background:var(--paper2);border:1.5px solid var(--line);}
+.rev-medal{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--mute);width:20px;}
+.rev-row.rank1 .rev-medal{color:var(--ghost);}
+.rev-name{flex:1;font-size:14px;font-weight:500;}
+.rev-sc{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:300;}
+
+/* ═══════════════════════
+   MOBILE
+═══════════════════════ */
+#sMobile{align-items:center;justify-content:center;background:var(--paper);padding:1.5rem 1rem;}
+.m-wrap{width:100%;max-width:380px;}
+.m-card{background:var(--paper);border:1.5px solid var(--ink);border-radius:var(--r);padding:1.75rem;}
+
+.m-brand{display:flex;align-items:center;gap:8px;margin-bottom:1.75rem;}
+.m-brand .brand-stripe{width:3px;height:18px;}
+.m-brand strong{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;letter-spacing:.04em;}
+
+.m-label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;}
+.m-input{width:100%;background:var(--paper2);border:1.5px solid var(--line);border-radius:var(--r);padding:11px 13px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .2s;margin-bottom:.85rem;}
+.m-input:focus{border-color:var(--ink);}
+.m-input::placeholder{color:var(--ghost);}
+.m-hint{font-size:12px;color:var(--mute);margin-bottom:.75rem;line-height:1.5;}
+.m-btn{width:100%;padding:13px;background:var(--ink);color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s,transform .1s;margin-top:.4rem;letter-spacing:.03em;}
+.m-btn:hover{opacity:.82;}
+.m-btn:active{transform:scale(.98);}
+.m-btn:disabled{opacity:.25;cursor:not-allowed;}
+
+/* wait / done screens */
+.m-state{text-align:center;padding:1.5rem 0;}
+.m-state-icon{font-size:2rem;margin-bottom:.75rem;display:block;}
+.m-state h3{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:400;letter-spacing:.02em;margin-bottom:.4rem;}
+.m-state p{font-size:12px;color:var(--mute);line-height:1.6;}
+
+/* vote cards */
+.vote-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;}
+.v-card{border:1.5px solid var(--line);border-radius:var(--r);padding:12px;transition:all .2s;background:var(--paper2);}
+.v-card.up{border-color:var(--grn);background:#e6f9ed;}
+.v-card.dn{border-color:var(--red);background:#fce8e5;}
+.v-card-title{font-size:13px;font-weight:500;margin-bottom:9px;}
+.v-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.v-btn{padding:9px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--paper);color:var(--mute);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;letter-spacing:.02em;}
+.v-btn:hover{border-color:var(--ink);color:var(--ink);}
+.v-btn.ua{background:var(--grn);border-color:var(--grn);color:#fff;}
+.v-btn.da{background:var(--red);border-color:var(--red);color:#fff;}
+.vote-note{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--mute);text-align:center;margin-bottom:.6rem;transition:color .2s;}
+.vote-note.ready{color:var(--grn);}
+
+/* lobby join (mobile phase 0) */
+.m-metro-badge{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;}
+.m-metro-badge .dot{width:10px;height:10px;border-radius:50%;background:var(--red);}
+.m-metro-badge span{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);}
+
+/* player chips */
+.player-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem;}
+.chip{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:4px 9px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;}
+
+/* metro connection line for lobby */
+.metro-connect{display:flex;align-items:center;gap:0;margin:1rem 0;}
+.metro-connect .node{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--ink);background:var(--paper);flex-shrink:0;}
+.metro-connect .node.active{background:var(--ink);}
+.metro-connect .seg{flex:1;height:3px;background:var(--line);}
+.metro-connect .seg.active{background:var(--ink);}
+
+/* phase labels under metro line */
+.phase-labels{display:grid;grid-template-columns:1fr 1fr 1fr;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;text-align:center;color:var(--ghost);margin-top:5px;}
+.phase-labels span.cur{color:var(--ink);}
+
+/* scrollbar */
+.feed-items::-webkit-scrollbar{width:4px;}
+.feed-items::-webkit-scrollbar-track{background:transparent;}
+.feed-items::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ── decorative map background ── -->
+<div class="map-bg">
+<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <!-- red line -->
+  <polyline points="80,200 280,200 420,340 680,340 820,480 1100,480" fill="none" stroke="#d63e2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- blue line -->
+  <polyline points="160,80 160,320 320,480 600,480 800,280 1050,280" fill="none" stroke="#2a6dd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- green line -->
+  <polyline points="0,560 300,560 480,380 700,380 900,560 1200,560" fill="none" stroke="#2ab85a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- yellow line -->
+  <polyline points="200,700 400,500 600,500 780,700" fill="none" stroke="#d6a42a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- stations -->
+  <circle cx="280" cy="200" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
+  <circle cx="420" cy="340" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="680" cy="340" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
+  <circle cx="160" cy="320" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/>
+  <circle cx="320" cy="480" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="600" cy="480" r="11" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="800" cy="280" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/>
+  <circle cx="480" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/>
+  <circle cx="700" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/>
+  <circle cx="400" cy="500" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="600" cy="500" r="7" fill="white" stroke="#d6a42a" stroke-width="3"/>
+  <circle cx="820" cy="480" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
+</svg>
+</div>
+
+<!-- ══ LOBBY ══ -->
+<div class="scr on above" id="sLobby">
+  <div class="lobby-wrap">
+
+    <div class="brand-row">
+      <div class="brand-stripe"></div>
+      <div class="brand-stripe2"></div>
+      <span class="brand-title">movie night</span>
+      <span class="brand-phase" id="phaseTag">phase 01 — lobby</span>
+    </div>
+
+    <!-- Metro progress line -->
+    <div>
+      <div class="metro-connect">
+        <div class="node active" id="node0"></div>
+        <div class="seg" id="seg01"></div>
+        <div class="node" id="node1"></div>
+        <div class="seg" id="seg12"></div>
+        <div class="node" id="node2"></div>
+        <div class="seg" id="seg23"></div>
+        <div class="node" id="node3"></div>
+      </div>
+      <div class="phase-labels">
+        <span id="pl0" class="cur">join</span>
+        <span id="pl1">submit</span>
+        <span id="pl2">vote</span>
+        <span id="pl3">result</span>
+      </div>
+    </div>
+
+    <div class="panel panel-pad qr-card">
+      <div class="qr-frame" id="qrBox"></div>
+      <div class="qr-right">
+        <h3>Scan to join</h3>
+        <p>Friends scan the QR code to enter their name. Once everyone's in, press <strong>Start submissions</strong>.</p>
+        <div class="qr-url" id="qrUrlTxt">—</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="panel panel-pad stat-cell">
+        <span class="label">Players</span>
+        <span class="big-num" id="pCount">0</span>
+      </div>
+      <div class="panel panel-pad stat-cell" id="timerBox" style="display:none;">
+        <span class="label">Time left</span>
+        <span class="big-num timer-time" id="p1Time">3:00</span>
+        <div class="timer-track" style="margin-top:.6rem;"><div class="timer-fill" id="p1Fill" style="width:100%"></div></div>
+      </div>
+      <div class="panel panel-pad stat-cell" id="mCountBox">
+        <span class="label">Movies in</span>
+        <span class="big-num" id="mCount">—</span>
+      </div>
+    </div>
+
+    <div class="panel panel-pad feed">
+      <div class="feed-head">
+        <div class="metro-dot filled"></div>
+        <span class="label" style="margin-bottom:0;">Live roster</span>
+      </div>
+      <div class="feed-items" id="feedList"><span class="feed-empty">Waiting for players to scan…</span></div>
+    </div>
+
+    <div class="act-row">
+      <button class="btn" id="mainBtn" onclick="hostStartSubmissions()">Start submissions</button>
+      <button class="btn-ghost" style="width:auto;padding:12px 18px;" onclick="hostReset()">Reset</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ HOST VOTE ══ -->
+<div class="scr above" id="sHostVote">
+  <div class="hv-rail">
+    <div class="hv-brand">
+      <div class="brand-stripe"></div>
+      <h2>movie night</h2>
+    </div>
+
+    <!-- progress line (compact) -->
+    <div>
+      <div class="metro-connect">
+        <div class="node active"></div>
+        <div class="seg active"></div>
+        <div class="node active"></div>
+        <div class="seg active"></div>
+        <div class="node active"></div>
+        <div class="seg"></div>
+        <div class="node"></div>
+      </div>
+      <div class="phase-labels">
+        <span>join</span>
+        <span>submit</span>
+        <span class="cur">vote</span>
+        <span></span>
+      </div>
+    </div>
+
+    <div class="ring-wrap" id="ringWrap">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <circle fill="none" stroke="#e0dbd0" stroke-width="5" cx="40" cy="40" r="32"/>
+        <circle id="ringArc" fill="none" stroke="#0e0e12" stroke-width="5" stroke-linecap="round"
+          cx="40" cy="40" r="32" stroke-dasharray="201.06" stroke-dashoffset="0"/>
+      </svg>
+      <div class="ring-num" id="p2Time">1:30</div>
+    </div>
+
+    <div class="vote-stat">
+      <div class="label">Votes cast</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:300;" id="vCount">0</div>
+    </div>
+
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:.6rem;">
+      <button class="btn" onclick="hostEndVoting()">Reveal winner</button>
+      <button class="btn-ghost" onclick="hostReset()">Restart</button>
+    </div>
+  </div>
+
+  <div class="hv-main">
+    <!-- progress line top -->
+    <div style="margin-bottom:2rem;">
+      <p class="label" style="margin-bottom:.35rem;">Live results</p>
+      <p style="font-size:13px;color:var(--mute);" id="chartSub">Waiting for votes…</p>
+    </div>
+    <div class="bars-wrap" id="barsArea"></div>
+  </div>
+</div>
+
+<!-- ══ REVEAL ══ -->
+<div class="scr above" id="sReveal">
+  <div class="reveal-wrap">
+
+    <!-- progress line -->
+    <div style="margin-bottom:2rem;">
+      <div class="metro-connect">
+        <div class="node active"></div>
+        <div class="seg active"></div>
+        <div class="node active"></div>
+        <div class="seg active"></div>
+        <div class="node active"></div>
+        <div class="seg active"></div>
+        <div class="node active"></div>
+      </div>
+      <div class="phase-labels"><span>join</span><span>submit</span><span>vote</span><span class="cur">result</span></div>
+    </div>
+
+    <div class="rev-top">
+      <div class="div-line"></div>
+      <div class="label" style="margin-bottom:.5rem;">Tonight's pick</div>
+      <div class="rev-winner" id="revTitle">—</div>
+      <div class="div-line"></div>
+    </div>
+
+    <div class="rev-list" id="revList"></div>
+
+    <button class="btn" onclick="hostReset()">New night</button>
+  </div>
+</div>
+
+<!-- ══ MOBILE ══ -->
+<div class="scr above" id="sMobile">
+  <div class="m-wrap">
+    <div class="m-card">
+      <div class="m-brand">
+        <div class="brand-stripe"></div>
+        <strong>movie night</strong>
+      </div>
+      <div id="mContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────
+const ROOM_ID = 'room_' + getOrMakeRoom();
+const DB_URL  = 'https://sidequest-movie-night-default-rtdb.europe-west1.firebasedatabase.app/';
+
+function getOrMakeRoom(){
+  const p = new URLSearchParams(location.search);
+  if(p.get('room')) return p.get('room');
+  const id = Math.random().toString(36).slice(2,8);
+  const u = new URL(location.href);
+  u.searchParams.set('room', id);
+  history.replaceState({}, '', u);
+  return id;
+}
+
+const IS_MOBILE = new URLSearchParams(location.search).has('vote');
+const PHASE1_SECS = 180; // submit timer
+const PHASE2_SECS = 90;  // vote timer
+const CIRC2 = 201.06;
+
+// ─────────────────────────────────────
+// Firebase REST helpers
+// ─────────────────────────────────────
+const BASE = `${DB_URL}/${ROOM_ID}`;
+async function dbGet(p=''){const r=await fetch(`${BASE}${p}.json`);return r.ok?r.json():null;}
+async function dbSet(p,d){await fetch(`${BASE}${p}.json`,{method:'PUT',body:JSON.stringify(d)});}
+async function dbPatch(p,d){await fetch(`${BASE}${p}.json`,{method:'PATCH',body:JSON.stringify(d)});}
+async function dbDelete(p=''){await fetch(`${BASE}${p}.json`,{method:'DELETE'});}
+
+// ─────────────────────────────────────
+// SHARED
+// ─────────────────────────────────────
+let G = {};
+let intervals = [];
+function clearAll(){ intervals.forEach(clearInterval); intervals=[]; }
+function tick(fn,ms){ const id=setInterval(fn,ms); intervals.push(id); return id; }
+function show(id){ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+const BAR_COLORS = ['#d63e2a','#2a6dd6','#2ab85a'];
+
+// ─────────────────────────────────────
+// HOST — LOBBY (phase: waiting)
+// Phase flow:
+//   'waiting' → players join by name only
+//   'submitting' → timer runs, players submit movies
+//   'voting' → ranked vote
+//   'reveal'
+// ─────────────────────────────────────
+async function hostLobby(){
+  show('sLobby');
+
+  const voterUrl = new URL(location.href);
+  voterUrl.searchParams.set('vote','1');
+  voterUrl.searchParams.set('room', ROOM_ID.replace('room_',''));
+  const vUrl = voterUrl.toString();
+  document.getElementById('qrUrlTxt').textContent = vUrl;
+
+  const qrBox = document.getElementById('qrBox');
+  qrBox.innerHTML = '';
+  try {
+    new QRCode(qrBox,{text:vUrl,width:96,height:96,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  } catch(e){ qrBox.textContent = '⬛'; }
+
+  let state = await dbGet('/state');
+  if(!state || state.phase === 'reveal'){
+    state = { phase:'waiting', waitStart:Date.now(), p1Start:null, submissions:{}, movies:[], votes:{}, voters:{} };
+    await dbSet('/state', state);
+  }
+  G = state;
+
+  updateLobbyPhaseUI();
+
+  tick(async()=>{
+    G = await dbGet('/state') || G;
+    updateLobbyUI();
+    if(G.phase === 'submitting'){
+      const elapsed = (Date.now() - G.p1Start)/1000;
+      if(elapsed >= PHASE1_SECS){ await hostStartVoting(); }
+    }
+  }, 1500);
+}
+
+function updateLobbyPhaseUI(){
+  const isSubmitting = G.phase === 'submitting';
+  document.getElementById('timerBox').style.display = isSubmitting ? '' : 'none';
+  document.getElementById('mCountBox').style.display = '';
+  if(isSubmitting){
+    document.getElementById('mainBtn').textContent = 'Start voting now';
+    document.getElementById('mainBtn').onclick = hostStartVoting;
+    document.getElementById('phaseTag').textContent = 'phase 02 — submissions';
+    setMetroProgress(1);
+  } else {
+    document.getElementById('mainBtn').textContent = 'Start submissions';
+    document.getElementById('mainBtn').onclick = hostStartSubmissions;
+    document.getElementById('phaseTag').textContent = 'phase 01 — lobby';
+    setMetroProgress(0);
+  }
+}
+
+function setMetroProgress(step){
+  // step 0=waiting, 1=submitting, 2=voting, 3=reveal
+  const nodes = ['node0','node1','node2','node3'];
+  const segs = ['seg01','seg12','seg23'];
+  const labels = ['pl0','pl1','pl2','pl3'];
+  nodes.forEach((id,i)=>{ const el=document.getElementById(id); if(el){ el.classList.toggle('active',i<=step); }});
+  segs.forEach((id,i)=>{ const el=document.getElementById(id); if(el){ el.classList.toggle('active',i<step); }});
+  labels.forEach((id,i)=>{ const el=document.getElementById(id); if(el){ el.classList.toggle('cur',i===step); }});
+}
+
+function updateLobbyUI(){
+  updateLobbyPhaseUI();
+  const subs = G.submissions ? Object.values(G.submissions) : [];
+  const mAll = subs.reduce((a,s)=>a+(s.movies||[]).length, 0);
+
+  document.getElementById('pCount').textContent = subs.length;
+  document.getElementById('mCount').textContent = G.phase === 'submitting' ? mAll : '—';
+
+  if(G.phase === 'submitting' && G.p1Start){
+    const elapsed = Math.min((Date.now()-G.p1Start)/1000, PHASE1_SECS);
+    const rem = Math.max(0, PHASE1_SECS - elapsed);
+    const m=Math.floor(rem/60), s=Math.round(rem%60);
+    document.getElementById('p1Time').textContent = `${m}:${String(s).padStart(2,'0')}`;
+    document.getElementById('p1Fill').style.width = Math.round(rem/PHASE1_SECS*100)+'%';
+  }
+
+  const fl = document.getElementById('feedList');
+  if(subs.length === 0){
+    fl.innerHTML = '<span class="feed-empty">Waiting for players to scan…</span>';
+  } else {
+    fl.innerHTML = subs.map(s => {
+      const movies = (s.movies||[]);
+      const movieText = movies.length ? ` — ${movies.map(m=>esc(m)).join(' · ')}` : '';
+      return `<div class="feed-row">
+        <span class="feed-name">${esc(s.name)}</span>
+        <span class="feed-movies">${movieText || '<em style="color:var(--ghost)">no movies yet</em>'}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+async function hostStartSubmissions(){
+  clearAll();
+  G = await dbGet('/state') || G;
+  if(G.phase !== 'waiting') return;
+  const newState = { ...G, phase:'submitting', p1Start: Date.now() };
+  await dbSet('/state', newState);
+  G = newState;
+
+  // notify mobile clients
+  tick(async()=>{
+    G = await dbGet('/state') || G;
+    updateLobbyUI();
+    if(G.phase === 'submitting'){
+      const elapsed = (Date.now()-G.p1Start)/1000;
+      if(elapsed >= PHASE1_SECS){ await hostStartVoting(); }
+    }
+  }, 1500);
+}
+
+async function hostStartVoting(){
+  clearAll();
+  G = await dbGet('/state') || G;
+  if(G.phase !== 'submitting') return;
+
+  let all = [];
+  const subs = G.submissions ? Object.values(G.submissions) : [];
+  subs.forEach(s=>(s.movies||[]).forEach(m=>all.push(m)));
+  const defaults=['The Dark Knight','Inception','Parasite','Pulp Fiction','Interstellar','Get Out','The Matrix','Goodfellas','Whiplash','La La Land'];
+  while(all.length < 3) all.push(defaults[Math.floor(Math.random()*defaults.length)]);
+
+  const picked = all.sort(()=>Math.random()-.5).slice(0,3);
+  const votes = {};
+  picked.forEach(m=>{ votes[m]=0; });
+
+  const newState = { ...G, phase:'voting', p2Start:Date.now(), movies:picked, votes, voters:{} };
+  await dbSet('/state', newState);
+  G = newState;
+  hostVote();
+}
+
+// ─────────────────────────────────────
+// HOST — VOTING
+// ─────────────────────────────────────
+function hostVote(){
+  show('sHostVote');
+  renderBars();
+  tick(async()=>{
+    G = await dbGet('/state') || G;
+    if(G.phase !== 'voting'){ clearAll(); return; }
+    renderBars();
+    updateRing();
+    const elapsed = (Date.now()-G.p2Start)/1000;
+    if(elapsed >= PHASE2_SECS){ await hostEndVoting(); }
+  }, 1200);
+}
+
+function renderBars(){
+  const mv = G.movies||[], vt = G.votes||{};
+  const vc = G.voters ? Object.keys(G.voters).length : 0;
+  document.getElementById('vCount').textContent = vc;
+  document.getElementById('chartSub').textContent = vc===0?'Waiting for votes…':`${vc} vote${vc===1?'':'s'} in`;
+  const scores = mv.map(m=>vt[m]||0);
+  const mx = Math.max(...scores.map(Math.abs), 1);
+
+  document.getElementById('barsArea').innerHTML = mv.map((m,i)=>{
+    const sc = scores[i];
+    const pct = Math.round(((sc+mx)/(2*mx))*100);
+    const w = Math.max(pct,3);
+    const sign = sc>0 ? '+' : '';
+    return `<div class="bar-row">
+      <div class="bar-meta">
+        <span class="bar-title">${esc(m)}</span>
+        <span class="bar-score" style="color:${BAR_COLORS[i]}">${sign}${sc}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${w}%;background:${BAR_COLORS[i]}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateRing(){
+  const elapsed = (Date.now()-G.p2Start)/1000;
+  const rem = Math.max(0, PHASE2_SECS-elapsed);
+  const m = Math.floor(rem/60), s = Math.round(rem%60);
+  document.getElementById('p2Time').textContent = `${m}:${String(s).padStart(2,'0')}`;
+  document.getElementById('ringArc').style.strokeDashoffset = CIRC2*(1-rem/PHASE2_SECS);
+}
+
+async function hostEndVoting(){
+  clearAll();
+  G = await dbGet('/state') || G;
+  G.phase = 'reveal';
+  await dbPatch('/state',{phase:'reveal'});
+  showReveal();
+}
+
+// ─────────────────────────────────────
+// REVEAL
+// ─────────────────────────────────────
+function showReveal(){
+  show('sReveal');
+  const mv = G.movies||[], vt = G.votes||{};
+  const sorted = [...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
+  document.getElementById('revTitle').textContent = sorted[0]||'—';
+
+  const rankClass = ['rank1','rank2','rank3'];
+  const rankLabel = ['01','02','03'];
+  document.getElementById('revList').innerHTML = sorted.map((m,i)=>{
+    const sc = vt[m]||0;
+    const sign = sc>0?'+':'';
+    return `<div class="rev-row ${rankClass[i]||'rank3'}">
+      <span class="rev-medal mono">${rankLabel[i]||'—'}</span>
+      <span class="rev-name">${esc(m)}</span>
+      <span class="rev-sc">${sign}${sc}</span>
+    </div>`;
+  }).join('');
+}
+
+async function hostReset(){
+  clearAll();
+  await dbDelete();
+  location.href = location.pathname;
+}
+
+// ─────────────────────────────────────
+// MOBILE
+// ─────────────────────────────────────
+let myName='', myVotes={}, joined=false, submitted=false, voted=false;
+let mPoll=null;
+
+async function mobileInit(){
+  show('sMobile');
+  G = await dbGet('/state') || {};
+  const ph = G.phase || 'waiting';
+
+  if(ph === 'waiting'){
+    if(joined) renderMWaitForSubmit();
+    else renderMJoinLobby();
+  } else if(ph === 'submitting'){
+    if(submitted) renderMWait();
+    else renderMSubmit();
+  } else if(ph === 'voting'){
+    if(voted) renderMDone();
+    else renderMVote();
+  } else if(ph === 'reveal'){
+    renderMReveal();
+  }
+}
+
+// Phase 0: Enter your name to join lobby
+function renderMJoinLobby(){
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-metro-badge"><div class="dot"></div><span>join lobby</span></div>
+    <label class="m-label">Your name</label>
+    <input class="m-input" id="mName" placeholder="Enter your name…" maxlength="30"/>
+    <button class="m-btn" onclick="mJoin()">Join</button>
+  `;
+  if(myName) document.getElementById('mName').value=myName;
+  if(mPoll) clearInterval(mPoll);
+  mPoll=setInterval(async()=>{
+    const st=await dbGet('/state');
+    G=st||G;
+    if(st&&st.phase==='submitting'&&!submitted){ clearInterval(mPoll); mobileInit(); }
+    else if(st&&st.phase==='voting'&&!voted){ clearInterval(mPoll); mobileInit(); }
+    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); mobileInit(); }
+  },3000);
+}
+
+async function mJoin(){
+  const name=(document.getElementById('mName').value||'').trim();
+  if(!name){alert('Enter your name!');return;}
+  myName=name;
+  const key=name.replace(/[.#$/\[\]]/g,'_');
+  // Register presence with no movies yet
+  await dbSet(`/state/submissions/${key}`,{name,movies:[]});
+  joined=true;
+  renderMWaitForSubmit();
+}
+
+// Waiting for host to start submissions
+function renderMWaitForSubmit(){
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-state">
+      <span class="m-state-icon">🚉</span>
+      <h3>You're on the platform</h3>
+      <p>Waiting for the host to open submissions…</p>
+      <div style="margin-top:1.25rem;">
+        <div class="label" style="margin-bottom:.4rem;">Logged in as</div>
+        <div class="chip">${esc(myName)}</div>
+      </div>
+    </div>`;
+  if(mPoll) clearInterval(mPoll);
+  mPoll=setInterval(async()=>{
+    const st=await dbGet('/state');
+    G=st||G;
+    if(st&&st.phase==='submitting'){ clearInterval(mPoll); renderMSubmit(); }
+    else if(st&&st.phase==='voting'){ clearInterval(mPoll); renderMVote(); }
+    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); renderMReveal(); }
+  },2500);
+}
+
+// Phase 1: Submit movies
+function renderMSubmit(){
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-metro-badge"><div class="dot" style="background:var(--blue)"></div><span>submit picks</span></div>
+    <p style="font-size:11px;color:var(--mute);margin-bottom:.75rem;font-family:'DM Mono',monospace;letter-spacing:.04em;">as ${esc(myName)}</p>
+    <label class="m-label">Your movie picks <span style="color:var(--ghost)">(up to 3)</span></label>
+    <p class="m-hint">Suggest movies you'd love to watch tonight.</p>
+    <input class="m-input" id="mM1" placeholder="Movie 1…" maxlength="80"/>
+    <input class="m-input" id="mM2" placeholder="Movie 2… (optional)" maxlength="80"/>
+    <input class="m-input" id="mM3" placeholder="Movie 3… (optional)" maxlength="80"/>
+    <button class="m-btn" onclick="mSubmit()">Submit picks</button>
+  `;
+  if(mPoll) clearInterval(mPoll);
+  mPoll=setInterval(async()=>{
+    const st=await dbGet('/state');
+    G=st||G;
+    if(st&&st.phase==='voting'&&!submitted){ clearInterval(mPoll); mobileInit(); }
+    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); mobileInit(); }
+  },3000);
+}
+
+async function mSubmit(){
+  const m1=(document.getElementById('mM1').value||'').trim();
+  if(!m1){alert('Add at least one movie!');return;}
+  const movies=[m1,
+    (document.getElementById('mM2').value||'').trim(),
+    (document.getElementById('mM3').value||'').trim()
+  ].filter(Boolean);
+  const key=myName.replace(/[.#$/\[\]]/g,'_');
+  await dbSet(`/state/submissions/${key}`,{name:myName,movies});
+  submitted=true;
+  renderMWait();
+}
+
+function renderMWait(){
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-state">
+      <span class="m-state-icon">⏳</span>
+      <h3>Picks submitted!</h3>
+      <p>Waiting for voting to begin…</p>
+    </div>`;
+  if(mPoll) clearInterval(mPoll);
+  mPoll=setInterval(async()=>{
+    const st=await dbGet('/state');
+    G=st||G;
+    if(st&&st.phase==='voting'){ clearInterval(mPoll); renderMVote(); }
+    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); renderMReveal(); }
+  },2500);
+}
+
+function renderMVote(){
+  const mv=G.movies||[];
+  myVotes={};
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-metro-badge"><div class="dot" style="background:var(--grn)"></div><span>vote</span></div>
+    <p class="vote-note" id="vNote">Pick one <strong>for</strong> and one <strong>against</strong></p>
+    <div class="vote-list" id="vList">
+      ${mv.map((m,i)=>`
+        <div class="v-card" id="vc${i}">
+          <div class="v-card-title">${esc(m)}</div>
+          <div class="v-btns">
+            <button class="v-btn" id="up${i}" onclick="toggleV(${i},1)">+ For</button>
+            <button class="v-btn" id="dn${i}" onclick="toggleV(${i},-1)">− Against</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <button class="m-btn" id="castBtn" onclick="castVote()" disabled>Cast vote</button>
+  `;
+  if(mPoll) clearInterval(mPoll);
+  mPoll=setInterval(async()=>{
+    const st=await dbGet('/state');
+    G=st||G;
+    if(st&&st.phase==='reveal'){ clearInterval(mPoll); renderMReveal(); }
+  },3000);
+}
+
+function toggleV(idx,dir){
+  const mv=G.movies||[];
+  const m=mv[idx];
+  myVotes[m]===dir ? delete myVotes[m] : (myVotes[m]=dir);
+  mv.forEach((mv2,i)=>{
+    const card=document.getElementById('vc'+i);
+    const upB=document.getElementById('up'+i);
+    const dnB=document.getElementById('dn'+i);
+    if(!card)return;
+    card.classList.remove('up','dn');
+    upB.classList.remove('ua'); dnB.classList.remove('da');
+    if(myVotes[mv2]===1){card.classList.add('up');upB.classList.add('ua');}
+    else if(myVotes[mv2]===-1){card.classList.add('dn');dnB.classList.add('da');}
+  });
+  const ups=Object.values(myVotes).filter(v=>v===1).length;
+  const dns=Object.values(myVotes).filter(v=>v===-1).length;
+  const ok=ups===1&&dns===1;
+  document.getElementById('castBtn').disabled=!ok;
+  const note=document.getElementById('vNote');
+  if(ok){ note.innerHTML='<span class="vote-note ready">Ready to cast</span>'; note.className='vote-note ready'; }
+  else { note.innerHTML=`Pick one <strong>for</strong> and one <strong>against</strong>`; note.className='vote-note'; }
+}
+
+async function castVote(){
+  if(voted)return;
+  G=await dbGet('/state')||G;
+  if(G.phase!=='voting'){mobileInit();return;}
+  const key=myName.replace(/[.#$/\[\]]/g,'_');
+  if(G.voters&&G.voters[key]){voted=true;renderMDone();return;}
+  await dbPatch('/state/voters',{[key]:true});
+  for(const [m,v] of Object.entries(myVotes)){
+    const cur=(G.votes&&G.votes[m])||0;
+    await dbPatch('/state/votes',{[m]:cur+v});
+  }
+  voted=true;
+  renderMDone();
+}
+
+function renderMDone(){
+  if(mPoll)clearInterval(mPoll);
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-state">
+      <span class="m-state-icon">✓</span>
+      <h3>Vote cast</h3>
+      <p>Watch the host screen for live results.</p>
+    </div>`;
+  mPoll=setInterval(async()=>{
+    const st=await dbGet('/state');
+    G=st||G;
+    if(st&&st.phase==='reveal'){clearInterval(mPoll);renderMReveal();}
+  },3000);
+}
+
+function renderMReveal(){
+  if(mPoll)clearInterval(mPoll);
+  const mv=G.movies||[],vt=G.votes||{};
+  const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-state">
+      <span class="m-state-icon">★</span>
+      <div class="label" style="margin-bottom:.5rem;">Tonight's pick</div>
+      <h3 style="font-size:1.1rem;font-family:'DM Mono',monospace;font-weight:400;">${esc(sorted[0]||'—')}</h3>
+    </div>`;
+}
+
+// ─────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────
+(async function boot(){
+  if(IS_MOBILE){
+    await mobileInit();
+  } else {
+    const st = await dbGet('/state');
+    G = st || {};
+    if(G.phase==='voting'){ hostVote(); }
+    else if(G.phase==='reveal'){ showReveal(); }
+    else if(G.phase==='submitting'){ await hostLobby(); }
+    else { hostLobby(); }
+  }
+})();
+</script>
+</body>
+</html>
