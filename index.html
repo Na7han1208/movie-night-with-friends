@@ -261,7 +261,7 @@ function getOrMakeRoom(){
   history.replaceState({},''  ,u);return id;
 }
 const IS_MOBILE=new URLSearchParams(location.search).has('vote');
-const P1=180,P2=90,CIRC_V=175.93;
+const P1=59,P2=29,CIRC_V=175.93;
 const BASE=`${DB_URL}/${ROOM_ID}`;
 async function dbGet(p=''){const r=await fetch(`${BASE}${p}.json`);return r.ok?r.json():null;}
 async function dbSet(p,d){await fetch(`${BASE}${p}.json`,{method:'PUT',body:JSON.stringify(d)});}
