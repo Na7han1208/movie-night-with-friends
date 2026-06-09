@@ -346,6 +346,7 @@ function initFish(){
   if(raf)cancelAnimationFrame(raf);
   fishLoop();
 }
+  
 function resolveUBowl(b){
   const {x,y,w,h,rx}=uBowl;
   const right=x+w;
@@ -372,6 +373,7 @@ function resolveUBowl(b){
   const innerBottom = bottom-rx;
   const innerLeft = x+rx;
   const innerRight = right-rx;
+}
 
 function dropBall(text){
   if(!cvs||!ctx)return;
