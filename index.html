@@ -15,9 +15,6 @@
 }
 html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;}
 
-.map-bg{position:fixed;inset:0;pointer-events:none;z-index:0;}
-.map-bg svg{width:100%;height:100%;opacity:.09;}
-
 .scr{position:fixed;inset:0;display:flex;flex-direction:column;
   opacity:0;pointer-events:none;
   transition:opacity .55s ease,transform .55s ease;
@@ -150,27 +147,6 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 </head>
 <body>
 
-<div class="map-bg">
-<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-  <polyline points="80,200 280,200 420,340 680,340 820,480 1100,480" fill="none" stroke="#d63e2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="160,80 160,320 320,480 600,480 800,280 1050,280" fill="none" stroke="#2a6dd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="0,560 300,560 480,380 700,380 900,560 1200,560" fill="none" stroke="#2ab85a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <polyline points="200,700 400,500 600,500 780,700" fill="none" stroke="#d6a42a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="280" cy="200" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
-  <circle cx="420" cy="340" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
-  <circle cx="680" cy="340" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
-  <circle cx="160" cy="320" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/>
-  <circle cx="320" cy="480" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
-  <circle cx="600" cy="480" r="11" fill="white" stroke="#0e0e12" stroke-width="3"/>
-  <circle cx="800" cy="280" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/>
-  <circle cx="480" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/>
-  <circle cx="700" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/>
-  <circle cx="400" cy="500" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
-  <circle cx="600" cy="500" r="7" fill="white" stroke="#d6a42a" stroke-width="3"/>
-  <circle cx="820" cy="480" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
-</svg>
-</div>
-
 <!-- LOBBY -->
 <div class="scr" id="sLobby">
   <div class="lobby-left">
@@ -295,8 +271,8 @@ function shuffle(arr){
   return a;
 }
 
-const CHIP_COLORS=['var(--red)','var(--blue)','var(--grn)','var(--ylw)','var(--ink)'];
-const BAR_COLORS=['#d63e2a','#2a6dd6','#2ab85a'];
+const CHIP_COLORS=['#E8341A','#1A6DB5','#F5A800','#2E9B47','#8B1A8B'];
+const BAR_COLORS=['#E8341A','#1A6DB5','#2E9B47'];
 
 let activeScr=null;
 function show(id){
@@ -316,7 +292,15 @@ function show(id){
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
 const GRAV=0.38,DAMP=0.48,FRIC=0.978;
 const BALL_R_MIN=52,BALL_R_MAX=72;
-const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a','#8b5cf6','#d6a42a'];
+const PILL_COLORS=[
+  '#E8341A', // red line
+  '#1A6DB5', // blue line
+  '#F5A800', // yellow line
+  '#2E9B47', // green line
+  '#8B1A8B', // purple line
+  '#00839B', // teal line
+  '#E07B39', // orange line
+];
 
 // FIX 1: Bowl has a max-width so it doesn't stretch across wide screens.
 // It sits centred in the canvas; we store an x-offset for that.
@@ -537,34 +521,11 @@ let animating=false;
 async function runSelectionAnimation(picked){
   animating=true;
   return new Promise(resolve=>{
-    const total=balls.length;
-    if(!total){animating=false;resolve();return;}
-    let hlIdx=0,cycleCount=0,maxCycles=total*4+14;
-    const currentMovies = G.movies || [];
-    const shuffled = shuffle(
-      balls.filter(b => currentMovies.includes(b.text))
-    );
-    const cycle=setInterval(()=>{
-      balls.forEach(b=>{b.highlight=false;b.selected=false;});
-      const b=shuffled[hlIdx%shuffled.length];
-      if(b)b.highlight=true;
-      hlIdx++;cycleCount++;
-      if(cycleCount>=maxCycles){
-        clearInterval(cycle);
-        balls.forEach(b=>{b.highlight=false;});
-        let pi=0;
-        const reveal=setInterval(()=>{
-          if(pi>=picked.length){
-            clearInterval(reveal);
-            setTimeout(()=>{animating=false;resolve();},1000);
-            return;
-          }
-          const target=balls.find(b=>b.text===picked[pi]);
-          if(target)target.selected=true;
-          pi++;
-        },750);
-      }
-    },85);
+    balls.forEach(b=>{
+      b.highlight=false;
+      b.selected=picked.includes(b.text);
+    });
+    setTimeout(()=>{animating=false;resolve();},1800);
   });
 }
 
