@@ -531,24 +531,13 @@ function hostSubmitScreen(){
     }));
   },380);
 
-tick(async()=>{
+  tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();return;}
     const subs=G.submissions?Object.values(G.submissions):[];
     const allM=[];subs.forEach(s=>(s.movies||[]).forEach(m=>allM.push(m)));
-
-    // Add new balls
-    allM.forEach(m=>{if(!seenMovies.has(m)){seenMovies.add(m);dropBall(m);}});
-
-    // Remove deleted balls
-    seenMovies.forEach(m=>{
-      if(!allM.includes(m)){
-        seenMovies.delete(m);
-        removeBall(m);
-      }
-    });
-
     document.getElementById('fishMCount').textContent=allM.length;
+    allM.forEach(m=>{if(!seenMovies.has(m)){seenMovies.add(m);dropBall(m);}});
     if(G.p1Start){
       const el=Math.min((Date.now()-G.p1Start)/1000,P1);
       const rem=Math.max(0,P1-el);
@@ -557,6 +546,7 @@ tick(async()=>{
       if(el>=P1){clearAll();await hostStartVoting();}
     }
   },2000);
+}
 
 async function hostStartVoting(){
   clearAll();if(raf)cancelAnimationFrame(raf);
