@@ -346,40 +346,32 @@ function initFish(){
   if(raf)cancelAnimationFrame(raf);
   fishLoop();
 }
-
 function resolveUBowl(b){
-  const{x,y,w,h,rx}=uBowl;
-  const right=x+w, bottom=y+h;
-  const innerBottom=bottom-rx;
-  const innerLeft=x+rx;
-  const innerRight=right-rx;
+  const {x,y,w,h,rx}=uBowl;
+  const right=x+w;
+  const bottom=y+h;
 
-  if(b.x-b.r<x){b.x=x+b.r;b.vx=Math.abs(b.vx)*DAMP;}
-  if(b.x+b.r>right){b.x=right-b.r;b.vx=-Math.abs(b.vx)*DAMP;}
-  if(b.x>=innerLeft&&b.x<=innerRight&&b.y+b.r>bottom){
-    b.y=bottom-b.r;b.vy=-Math.abs(b.vy)*DAMP;b.vx*=FRIC;
+  // HARD LEFT WALL
+  if(b.x - b.r < x){
+    b.x = x + b.r;
+    b.vx = Math.abs(b.vx) * DAMP;
   }
-  if(b.x<innerLeft&&b.y>innerBottom){
-    const cx=innerLeft,cy=innerBottom;
-    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy),minDist=rx+b.r;
-    if(dist<minDist&&dist>0.01){
-      const nx=dx/dist,ny=dy/dist;
-      b.x=cx+nx*minDist;b.y=cy+ny*minDist;
-      const dot=b.vx*nx+b.vy*ny;
-      if(dot<0){b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;}
-    }
+
+  // HARD RIGHT WALL
+  if(b.x + b.r > right){
+    b.x = right - b.r;
+    b.vx = -Math.abs(b.vx) * DAMP;
   }
-  if(b.x>innerRight&&b.y>innerBottom){
-    const cx=innerRight,cy=innerBottom;
-    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy),minDist=rx+b.r;
-    if(dist<minDist&&dist>0.01){
-      const nx=dx/dist,ny=dy/dist;
-      b.x=cx+nx*minDist;b.y=cy+ny*minDist;
-      const dot=b.vx*nx+b.vy*ny;
-      if(dot<0){b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;}
-    }
+
+  // PREVENT ESCAPING ABOVE THE RIM
+  if(b.y < y + b.r){
+    b.y = y + b.r;
+    b.vy = Math.abs(b.vy) * 0.2;
   }
-}
+
+  const innerBottom = bottom-rx;
+  const innerLeft = x+rx;
+  const innerRight = right-rx;
 
 function dropBall(text){
   if(!cvs||!ctx)return;
@@ -437,6 +429,17 @@ function fishLoop(){
     const b=balls[i];
     b.vy+=GRAV;b.vx*=FRIC;b.vy*=FRIC;
     b.x+=b.vx;b.y+=b.vy;
+    // Emergency recovery for escaped balls
+    if(
+      b.x < -500 ||
+      b.x > CW + 500 ||
+      b.y > CH + 500 ||
+      b.y < -500
+    ){
+      balls.splice(i,1);
+      i--;
+      continue;
+    }
     resolveUBowl(b);
 
     for(let j=i+1;j<balls.length;j++){
@@ -486,6 +489,15 @@ function fishLoop(){
   }
   ctx.restore();
   raf=requestAnimationFrame(fishLoop);
+  const validMovies = new Set();
+
+if(G.submissions){
+  Object.values(G.submissions).forEach(s=>{
+    (s.movies || []).forEach(m=>validMovies.add(m));
+  });
+}
+
+balls = balls.filter(b => validMovies.has(b.text));
 }
 
 /* ══ SELECTION ANIMATION ══ */
@@ -498,7 +510,10 @@ async function runSelectionAnimation(picked){
     const total=balls.length;
     if(!total){animating=false;resolve();return;}
     let hlIdx=0,cycleCount=0,maxCycles=total*4+14;
-    const shuffled=shuffle(balls);
+    const currentMovies = G.movies || [];
+    const shuffled = shuffle(
+      balls.filter(b => currentMovies.includes(b.text))
+    );
     const cycle=setInterval(()=>{
       balls.forEach(b=>{b.highlight=false;b.selected=false;});
       const b=shuffled[hlIdx%shuffled.length];
