@@ -532,15 +532,6 @@ function fishLoop(){
   }
   ctx.restore();
   raf=requestAnimationFrame(fishLoop);
-  const validMovies = new Set();
-
-if(G.submissions){
-  Object.values(G.submissions).forEach(s=>{
-    (s.movies || []).forEach(m=>validMovies.add(m));
-  });
-}
-
-balls = balls.filter(b => validMovies.has(b.text));
 }
 
 /* ══ SELECTION ANIMATION ══ */
