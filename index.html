@@ -15,11 +15,9 @@
 }
 html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;}
 
-/* MAP BG */
 .map-bg{position:fixed;inset:0;pointer-events:none;z-index:0;}
 .map-bg svg{width:100%;height:100%;opacity:.09;}
 
-/* SCREENS */
 .scr{position:fixed;inset:0;display:flex;flex-direction:column;
   opacity:0;pointer-events:none;
   transition:opacity .55s ease,transform .55s ease;
@@ -35,41 +33,27 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .btn-ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:var(--mute);border:2.5px solid var(--line);border-radius:var(--r);padding:18px 36px;font-family:'DM Sans',sans-serif;font-size:18px;cursor:pointer;transition:all .15s;}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink);}
 
-/* ══ LOBBY ══ */
+/* LOBBY */
 #sLobby{flex-direction:row;}
-.lobby-left{
-  flex:0 0 54%;border-right:3px solid var(--ink);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2.5rem;padding:3rem;
-}
+.lobby-left{flex:0 0 54%;border-right:3px solid var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;padding:3rem;}
 .lobby-brand{display:flex;align-items:center;gap:12px;align-self:flex-start;}
 .lobby-brand-bar{width:5px;height:36px;}
 .lobby-brand-title{font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:500;letter-spacing:.04em;}
 .qr-outer{background:#fff;border:3px solid var(--ink);border-radius:var(--r);padding:14px;display:flex;align-items:center;justify-content:center;}
 .lobby-scan-label{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:400;letter-spacing:.04em;color:var(--mute);text-align:center;}
-
 .lobby-right{flex:1;display:flex;flex-direction:column;padding:3rem 3.5rem;gap:0;overflow:hidden;}
 .lobby-player-count{font-family:'DM Mono',monospace;font-size:7rem;font-weight:300;line-height:1;letter-spacing:-.04em;margin-bottom:.25rem;}
 .lobby-player-label{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:2rem;}
 .lobby-divider{height:3px;background:var(--ink);margin-bottom:2rem;}
 .player-chips{display:flex;flex-wrap:wrap;gap:10px;flex:1;align-content:flex-start;overflow:hidden;}
-.player-chip{
-  display:flex;align-items:center;gap:9px;
-  font-family:'DM Mono',monospace;font-size:1.05rem;
-  border:2.5px solid var(--ink);border-radius:var(--r);
-  padding:10px 16px;
-  animation:chipIn .35s cubic-bezier(.34,1.56,.64,1);
-}
+.player-chip{display:flex;align-items:center;gap:9px;font-family:'DM Mono',monospace;font-size:1.05rem;border:2.5px solid var(--ink);border-radius:var(--r);padding:10px 16px;animation:chipIn .35s cubic-bezier(.34,1.56,.64,1);}
 .player-chip-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 @keyframes chipIn{from{opacity:0;transform:scale(.75);}to{opacity:1;transform:scale(1);}}
 .lobby-actions{margin-top:auto;display:flex;gap:1rem;}
 
-/* ══ SUBMISSIONS / FISHBOWL ══ */
+/* SUBMISSIONS */
 #sSubmit{flex-direction:column;}
-.submit-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:2rem 4rem;border-bottom:3px solid var(--ink);flex-shrink:0;
-}
+.submit-header{display:flex;align-items:center;justify-content:space-between;padding:2rem 4rem;border-bottom:3px solid var(--ink);flex-shrink:0;}
 .submit-header-left{display:flex;align-items:center;gap:2rem;}
 .submit-phase{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
 .submit-headline{font-family:'DM Mono',monospace;font-size:2.2rem;font-weight:300;letter-spacing:-.02em;}
@@ -77,51 +61,29 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .submit-count-big{font-family:'DM Mono',monospace;font-size:4rem;font-weight:300;line-height:1;letter-spacing:-.04em;}
 .fish-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 #fishCanvas{display:block;}
-.fish-timer{
-  position:absolute;bottom:2.5rem;right:3rem;
-  font-family:'DM Mono',monospace;font-size:5rem;font-weight:300;letter-spacing:-.04em;line-height:1;
-  color:var(--ink);opacity:.18;pointer-events:none;
-}
+.fish-timer{position:absolute;bottom:2.5rem;right:3rem;font-family:'DM Mono',monospace;font-size:5rem;font-weight:300;letter-spacing:-.04em;line-height:1;color:var(--ink);opacity:.18;pointer-events:none;}
 .submit-footer{padding:1.5rem 4rem;border-top:2.5px solid var(--paper3);display:flex;gap:1rem;justify-content:flex-end;flex-shrink:0;}
 
-/* ══ HOST VOTE ══ */
+/* HOST VOTE */
 #sHostVote{flex-direction:column;}
-.vote-header{
-  display:flex;align-items:center;gap:2.5rem;
-  padding:2.5rem 5rem;border-bottom:3px solid var(--ink);flex-shrink:0;
-}
+.vote-header{display:flex;align-items:center;gap:2.5rem;padding:2.5rem 5rem;border-bottom:3px solid var(--ink);flex-shrink:0;}
 .vote-header-title{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);flex:1;}
-.vote-voter-pill{
-  font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.08em;
-  border:2.5px solid var(--ink);border-radius:var(--r);padding:8px 20px;
-}
+.vote-voter-pill{font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.08em;border:2.5px solid var(--ink);border-radius:var(--r);padding:8px 20px;}
 .vote-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
 .vote-ring-wrap svg{transform:rotate(-90deg);}
 .vote-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1rem;font-weight:400;}
 .vote-btns{display:flex;gap:1rem;}
-
 .vote-bars-area{flex:1;display:flex;flex-direction:column;justify-content:stretch;padding:0;}
-.vote-bar-row{
-  flex:1;display:flex;align-items:center;
-  border-bottom:2.5px solid var(--paper3);
-  padding:0 5rem;gap:4rem;
-  transition:background .3s;
-}
+.vote-bar-row{flex:1;display:flex;align-items:center;border-bottom:2.5px solid var(--paper3);padding:0 5rem;gap:4rem;transition:background .3s;}
 .vote-bar-row:last-child{border-bottom:none;}
 .vote-bar-row.leading{background:var(--paper2);}
-.vote-bar-movie{
-  font-family:'DM Mono',monospace;font-size:2.4rem;font-weight:400;
-  flex:0 0 38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  letter-spacing:-.01em;
-}
+.vote-bar-movie{font-family:'DM Mono',monospace;font-size:2.4rem;font-weight:400;flex:0 0 38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em;}
 .vote-bar-track-wrap{flex:1;display:flex;flex-direction:column;gap:.6rem;}
 .vote-bar-track{height:28px;background:var(--paper3);border-radius:3px;overflow:hidden;position:relative;}
 .vote-bar-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.34,1.2,.64,1);min-width:6px;width:3%;}
-.vote-bar-dot{
-  width:18px;height:18px;border-radius:50%;border:3px solid var(--ink);flex-shrink:0;
-}
+.vote-bar-dot{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink);flex-shrink:0;}
 
-/* ══ REVEAL ══ */
+/* REVEAL */
 #sReveal{align-items:center;justify-content:center;}
 .reveal-wrap{width:min(900px,90vw);}
 .reveal-eyebrow{font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:1.25rem;}
@@ -139,7 +101,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .reveal-row.r1 .reveal-dot{border:2.5px solid var(--paper);}
 .reveal-row.r2 .reveal-dot,.reveal-row.r3 .reveal-dot{border:2.5px solid var(--ink);}
 
-/* ══ MOBILE ══ */
+/* MOBILE */
 #sMobile{overflow-y:auto;}
 .m-scroll{padding:2rem 1.25rem;min-height:100%;display:flex;flex-direction:column;align-items:center;}
 .m-card{background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r);padding:2.5rem;width:100%;max-width:520px;}
@@ -172,19 +134,17 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .m-movie-rm{background:transparent;border:none;color:var(--ghost);font-family:'DM Mono',monospace;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s;}
 .m-movie-rm:hover{color:var(--paper);}
 .m-movie-empty{font-size:15px;color:var(--ghost);font-style:italic;padding:8px 0;margin-bottom:1.25rem;}
-/* vote */
 .mv-list{display:flex;flex-direction:column;gap:16px;margin-bottom:1rem;}
 .mv-card{border:2.5px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper2);}
 .mv-card-header{display:flex;align-items:center;gap:14px;padding:20px 22px;}
 .mv-card-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
 .mv-card-title{font-size:20px;font-weight:500;flex:1;line-height:1.3;}
 .mv-btns{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--line);}
-.mv-btn{padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;border:none;background:var(--paper);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);transition:all .15s;}
+.mv-btn{padding:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:var(--paper);font-size:36px;line-height:1;transition:all .15s;}
 .mv-btn:first-child{border-right:1px solid var(--line);}
 .mv-btn:hover{background:var(--paper2);}
-.mv-btn.up-on{background:#e6f9ed;color:#1a7a3a;}
-.mv-btn.dn-on{background:#fce8e5;color:#9a2a1a;}
-.mv-btn-icon{font-size:34px;line-height:1;}
+.mv-btn.up-on{background:#e6f9ed;}
+.mv-btn.dn-on{background:#fce8e5;}
 .mv-status{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--mute);text-align:center;padding:.75rem 0;}
 </style>
 </head>
@@ -211,7 +171,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 </svg>
 </div>
 
-<!-- ══ LOBBY ══ -->
+<!-- LOBBY -->
 <div class="scr" id="sLobby">
   <div class="lobby-left">
     <div class="lobby-brand">
@@ -230,13 +190,13 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
       <span style="font-size:16px;color:var(--ghost);font-style:italic;font-family:'DM Mono',monospace;">waiting for players...</span>
     </div>
     <div class="lobby-actions">
-      <button class="btn" style="flex:1;" id="mainBtn" onclick="hostStartSubmissions()">Start submissions</button>
+      <button class="btn" style="flex:1;" onclick="hostStartSubmissions()">Start submissions</button>
       <button class="btn-ghost" onclick="hostReset()">Reset</button>
     </div>
   </div>
 </div>
 
-<!-- ══ SUBMISSIONS ══ -->
+<!-- SUBMISSIONS -->
 <div class="scr" id="sSubmit">
   <div class="submit-header">
     <div class="submit-header-left">
@@ -260,7 +220,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
   </div>
 </div>
 
-<!-- ══ HOST VOTE ══ -->
+<!-- HOST VOTE -->
 <div class="scr" id="sHostVote">
   <div class="vote-header">
     <span class="vote-header-title">movie night — vote on your phone</span>
@@ -281,20 +241,15 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
   <div class="vote-bars-area" id="vBarsArea"></div>
 </div>
 
-<!-- ══ REVEAL ══ -->
+<!-- REVEAL -->
 <div class="scr" id="sReveal">
   <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:4rem;">
-    <div class="reveal-wrap">
-      <div class="reveal-eyebrow">Tonight's pick</div>
-      <div class="reveal-winner-text" id="revWinner">...</div>
-      <div class="reveal-rule"></div>
-      <div class="reveal-list" id="revList"></div>
-      <button class="btn" onclick="hostReset()">New night</button>
+    <div class="reveal-wrap" id="revealWrap">
     </div>
   </div>
 </div>
 
-<!-- ══ MOBILE ══ -->
+<!-- MOBILE -->
 <div class="scr" id="sMobile">
   <div class="m-scroll">
     <div class="m-card">
@@ -349,16 +304,14 @@ function show(id){
 
 /* ══ PHYSICS FISHBOWL ══ */
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
-const GRAV=0.38,DAMP=0.55,FRIC=0.978;
-const FONT_POOL=[22,26,30,34];
+const GRAV=0.32,DAMP=0.52,FRIC=0.975;
+const BALL_R_MIN=38,BALL_R_MAX=54;
 const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a'];
-
-// Bowl is a fixed circle, not stretching to fill stage
-const BOWL_R_FRAC = 0.38; // fraction of min(CW,CH)
+const BOWL_R_FRAC=0.44;
 
 function getBowl(){
-  const r = Math.min(CW,CH) * BOWL_R_FRAC;
-  return { cx: CW/2, cy: CH/2, r };
+  const r=Math.min(CW,CH)*BOWL_R_FRAC;
+  return{cx:CW/2,cy:CH/2,r};
 }
 
 function initFish(){
@@ -375,20 +328,15 @@ function initFish(){
 
 function dropBall(text){
   if(!cvs||!ctx)return;
-  const fs=FONT_POOL[Math.floor(Math.random()*FONT_POOL.length)];
-  ctx.font=`500 ${fs}px 'DM Mono',monospace`;
-  const tw=ctx.measureText(text).width;
-  const pw=tw+28,ph=fs+18;
+  const r=BALL_R_MIN+Math.random()*(BALL_R_MAX-BALL_R_MIN);
   const col=PILL_COLORS[Math.floor(Math.random()*PILL_COLORS.length)];
   const bowl=getBowl();
   balls.push({
-    x:bowl.cx+(Math.random()-.5)*bowl.r*0.4,
-    y:-ph-10,
+    x:bowl.cx+(Math.random()-.5)*bowl.r*0.3,
+    y:-r*2-10,
     vx:(Math.random()-.5)*3,vy:0,
-    text,fs,pw,ph,col,
-    rot:(Math.random()-.5)*.15,
-    rotV:(Math.random()-.5)*.04,
-    r:Math.hypot(pw,ph)/2
+    text,r,col,
+    highlight:false,selected:false
   });
 }
 
@@ -401,76 +349,111 @@ function fishLoop(){
   if(!ctx)return;
   ctx.clearRect(0,0,CW,CH);
   const bowl=getBowl();
-  const {cx,cy,r}=bowl;
+  const{cx,cy,r}=bowl;
 
-  // Draw bowl outline
   ctx.save();
   ctx.strokeStyle='#0e0e12';ctx.lineWidth=3;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
-
-  // Clip to bowl interior
   ctx.beginPath();ctx.arc(cx,cy,r-2,0,Math.PI*2);ctx.clip();
 
   for(let i=0;i<balls.length;i++){
     const b=balls[i];
-    b.vy+=GRAV;
-    b.vx*=FRIC;b.vy*=FRIC;
-    // Strongly damp rotation so it stops spinning
-    b.rotV*=0.90;
-    if(Math.abs(b.rotV)<0.001)b.rotV=0;
-    b.x+=b.vx;b.y+=b.vy;b.rot+=b.rotV;
+    b.vy+=GRAV;b.vx*=FRIC;b.vy*=FRIC;
+    b.x+=b.vx;b.y+=b.vy;
 
-    // Circular wall collision — use pill radius as collision proxy
-    const collR = b.r * 0.52;
-    const dx=b.x-cx, dy=b.y-cy;
-    const dist=Math.sqrt(dx*dx+dy*dy);
-    const maxDist=r-collR;
+    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy);
+    const maxDist=r-b.r-2;
     if(dist>maxDist&&dist>0.01){
-      const nx=dx/dist, ny=dy/dist;
-      b.x=cx+nx*maxDist;
-      b.y=cy+ny*maxDist;
+      const nx=dx/dist,ny=dy/dist;
+      b.x=cx+nx*maxDist;b.y=cy+ny*maxDist;
       const dot=b.vx*nx+b.vy*ny;
       b.vx=(b.vx-2*dot*nx)*DAMP;
       b.vy=(b.vy-2*dot*ny)*DAMP;
-      // Only a tiny rotation nudge on wall hit, not continuous spin
-      b.rotV+=(Math.random()-.5)*0.03;
     }
 
-    // Ball-ball collisions
     for(let j=i+1;j<balls.length;j++){
       const o=balls[j];
-      const ddx=o.x-b.x, ddy=o.y-b.y;
-      const dd=Math.hypot(ddx,ddy);
-      const md=(b.r+o.r)*0.62;
+      const ddx=o.x-b.x,ddy=o.y-b.y,dd=Math.hypot(ddx,ddy);
+      const md=b.r+o.r;
       if(dd<md&&dd>0.01){
-        const nx=ddx/dd, ny=ddy/dd;
-        const ov=(md-dd)*0.5;
-        b.x-=nx*ov;b.y-=ny*ov;
-        o.x+=nx*ov;o.y+=ny*ov;
-        const dv=(b.vx-o.vx)*nx+(b.vy-o.vy)*ny;
-        const imp=dv*0.55;
-        b.vx-=imp*nx;b.vy-=imp*ny;
-        o.vx+=imp*nx;o.vy+=imp*ny;
-        // Minimal rotation from collisions
-        b.rotV+=(Math.random()-.5)*0.02;
-        o.rotV-=(Math.random()-.5)*0.02;
+        const nx=ddx/dd,ny=ddy/dd,ov=(md-dd)*0.5;
+        b.x-=nx*ov;b.y-=ny*ov;o.x+=nx*ov;o.y+=ny*ov;
+        const dv=(b.vx-o.vx)*nx+(b.vy-o.vy)*ny,imp=dv*0.55;
+        b.vx-=imp*nx;b.vy-=imp*ny;o.vx+=imp*nx;o.vy+=imp*ny;
       }
     }
 
-    // Draw pill
     ctx.save();
-    ctx.translate(b.x,b.y);ctx.rotate(b.rot);
-    const hw=b.pw/2, hh=b.ph/2;
-    ctx.beginPath();ctx.roundRect(-hw,-hh,b.pw,b.ph,hh);
-    ctx.fillStyle=b.col;ctx.fill();
-    ctx.fillStyle='#f5f2eb';
-    ctx.font=`500 ${b.fs}px 'DM Mono',monospace`;
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    if(b.selected){
+      ctx.fillStyle='#f5f2eb';ctx.fill();
+      ctx.strokeStyle=b.col;ctx.lineWidth=4;ctx.stroke();
+    } else if(b.highlight){
+      ctx.fillStyle=b.col;ctx.fill();
+      ctx.strokeStyle='#f5f2eb';ctx.lineWidth=3;ctx.stroke();
+    } else {
+      ctx.fillStyle=b.col;ctx.fill();
+    }
+
+    const maxW=(b.r*2)-16;
+    let fs=15;
+    ctx.font=`500 ${fs}px 'DM Mono',monospace`;
+    while(ctx.measureText(b.text).width>maxW&&fs>8){fs--;ctx.font=`500 ${fs}px 'DM Mono',monospace`;}
+
+    ctx.fillStyle=b.selected?b.col:'#f5f2eb';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(b.text,0,1);
+
+    const words=b.text.split(' ');
+    if(words.length>1&&ctx.measureText(b.text).width>maxW){
+      const mid=Math.ceil(words.length/2);
+      const l1=words.slice(0,mid).join(' '),l2=words.slice(mid).join(' ');
+      let lfs=fs;
+      ctx.font=`500 ${lfs}px 'DM Mono',monospace`;
+      while((ctx.measureText(l1).width>maxW||ctx.measureText(l2).width>maxW)&&lfs>7){lfs--;ctx.font=`500 ${lfs}px 'DM Mono',monospace`;}
+      ctx.fillText(l1,b.x,b.y-lfs*0.7);
+      ctx.fillText(l2,b.x,b.y+lfs*0.7);
+    } else {
+      ctx.fillText(b.text,b.x,b.y+1);
+    }
     ctx.restore();
   }
   ctx.restore();
   raf=requestAnimationFrame(fishLoop);
+}
+
+/* ══ SELECTION ANIMATION ══ */
+async function runSelectionAnimation(picked){
+  return new Promise(resolve=>{
+    const total=balls.length;
+    if(!total){resolve();return;}
+
+    let hlIdx=0,cycleCount=0,maxCycles=total*4+14;
+    const shuffled=[...balls].sort(()=>Math.random()-.5);
+
+    const cycle=setInterval(()=>{
+      balls.forEach(b=>{b.highlight=false;b.selected=false;});
+      const b=shuffled[hlIdx%shuffled.length];
+      if(b)b.highlight=true;
+      hlIdx++;cycleCount++;
+
+      if(cycleCount>=maxCycles){
+        clearInterval(cycle);
+        balls.forEach(b=>{b.highlight=false;});
+
+        let pi=0;
+        const reveal=setInterval(()=>{
+          if(pi>=picked.length){
+            clearInterval(reveal);
+            setTimeout(resolve,1000);
+            return;
+          }
+          const target=balls.find(b=>b.text===picked[pi]);
+          if(target)target.selected=true;
+          pi++;
+        },750);
+      }
+    },85);
+  });
 }
 
 /* ══ HOST LOBBY ══ */
@@ -525,7 +508,6 @@ function hostSubmitScreen(){
   seenMovies=new Set();
   setTimeout(()=>{
     initFish();
-    // drop existing movies
     if(G.submissions)Object.values(G.submissions).forEach(s=>(s.movies||[]).forEach(m=>{
       if(!seenMovies.has(m)){seenMovies.add(m);setTimeout(()=>dropBall(m),100+Math.random()*400);}
     }));
@@ -536,8 +518,13 @@ function hostSubmitScreen(){
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();return;}
     const subs=G.submissions?Object.values(G.submissions):[];
     const allM=[];subs.forEach(s=>(s.movies||[]).forEach(m=>allM.push(m)));
-    document.getElementById('fishMCount').textContent=allM.length;
+
     allM.forEach(m=>{if(!seenMovies.has(m)){seenMovies.add(m);dropBall(m);}});
+    seenMovies.forEach(m=>{
+      if(!allM.includes(m)){seenMovies.delete(m);removeBall(m);}
+    });
+
+    document.getElementById('fishMCount').textContent=allM.length;
     if(G.p1Start){
       const el=Math.min((Date.now()-G.p1Start)/1000,P1);
       const rem=Math.max(0,P1-el);
@@ -549,9 +536,10 @@ function hostSubmitScreen(){
 }
 
 async function hostStartVoting(){
-  clearAll();if(raf)cancelAnimationFrame(raf);
+  clearAll();
   G=await dbGet('/state')||G;
   if(G.phase!=='submitting')return;
+
   let all=[];
   const subs=G.submissions?Object.values(G.submissions):[];
   subs.forEach(s=>(s.movies||[]).forEach(m=>all.push(m)));
@@ -560,7 +548,11 @@ async function hostStartVoting(){
   const picked=all.sort(()=>Math.random()-.5).slice(0,3);
   const votes={};picked.forEach(m=>{votes[m]=0;});
   const ns={...G,phase:'voting',p2Start:Date.now(),movies:picked,votes,voters:{}};
-  await dbSet('/state',ns);G=ns;hostVote();
+  await dbSet('/state',ns);G=ns;
+
+  await runSelectionAnimation(picked);
+  if(raf)cancelAnimationFrame(raf);
+  hostVote();
 }
 
 /* ══ HOST VOTE ══ */
@@ -615,20 +607,94 @@ async function hostEndVoting(){
 
 /* ══ REVEAL ══ */
 function showReveal(){
-  show('sReveal');
   const mv=G.movies||[],vt=G.votes||{};
   const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
-  document.getElementById('revWinner').textContent=sorted[0]||'...';
-  const rc=['r1','r2','r3'];const rl=['01','02','03'];
-  const maxSc=Math.max(...sorted.map(m=>vt[m]||0),1);
-  document.getElementById('revList').innerHTML=sorted.map((m,i)=>{
-    const col=BAR_COLORS[mv.indexOf(m)]||'var(--ink)';
-    return `<div class="reveal-row ${rc[i]||'r3'}">
-      <span class="reveal-rank mono">${rl[i]}</span>
-      <div class="reveal-dot" style="background:${rc[i]==='r1'?'transparent':col};border-color:${rc[i]==='r1'?'var(--paper)':col};"></div>
-      <span class="reveal-rname">${esc(m)}</span>
+  const topScore=vt[sorted[0]]||0;
+  const tied=sorted.filter(m=>(vt[m]||0)===topScore);
+
+  if(tied.length>1){
+    runCoinFlip(tied,sorted);
+  } else {
+    renderReveal(sorted);
+  }
+}
+
+function runCoinFlip(tied,sorted){
+  show('sReveal');
+  const wrap=document.getElementById('revealWrap');
+  wrap.innerHTML=`
+    <div class="reveal-eyebrow">It's a tie — flipping a coin</div>
+    <div style="display:flex;align-items:center;justify-content:center;margin:2.5rem 0;">
+      <canvas id="coinCanvas" width="160" height="160"></canvas>
+    </div>
+    <div class="reveal-rule"></div>
+    <div id="coinStatus" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:300;text-align:center;letter-spacing:-.01em;color:var(--mute);">
+      deciding between ${tied.map(m=>`<strong style="color:var(--ink)">${esc(m)}</strong>`).join(' vs ')}...
     </div>`;
-  }).join('');
+
+  const c=document.getElementById('coinCanvas');
+  const cx=c.getContext('2d');
+  let frame=0,totalFrames=90;
+  const winner=tied[Math.floor(Math.random()*tied.length)];
+  let side=true;
+
+  function drawCoin(scaleX){
+    cx.clearRect(0,0,160,160);
+    cx.save();
+    cx.translate(80,80);
+    cx.scale(scaleX,1);
+    cx.beginPath();cx.arc(0,0,62,0,Math.PI*2);
+    cx.fillStyle=side?'#0e0e12':'#d6a42a';cx.fill();
+    if(Math.abs(scaleX)>0.15){
+      cx.fillStyle='#f5f2eb';
+      cx.font=`500 28px 'DM Mono',monospace`;
+      cx.textAlign='center';cx.textBaseline='middle';
+      cx.fillText(side?'?':'!',0,1);
+    }
+    cx.restore();
+  }
+
+  const anim=setInterval(()=>{
+    frame++;
+    const progress=frame/totalFrames;
+    const speed=progress<0.65?1:1-((progress-0.65)/0.35)*0.88;
+    const angle=frame*speed*0.28;
+    const scaleX=Math.cos(angle);
+    if(Math.cos(angle-speed*0.28)*scaleX<0)side=!side;
+    drawCoin(scaleX);
+
+    if(frame>=totalFrames){
+      clearInterval(anim);
+      drawCoin(1);
+      document.getElementById('coinStatus').innerHTML=`<span style="color:var(--mute);font-size:1rem;font-family:'DM Mono',monospace;">🪙 the coin lands...</span>`;
+      setTimeout(()=>{
+        const finalSorted=[winner,...sorted.filter(m=>m!==winner)];
+        renderReveal(finalSorted);
+      },1000);
+    }
+  },16);
+}
+
+function renderReveal(sorted){
+  show('sReveal');
+  const mv=G.movies||[],vt=G.votes||{};
+  const wrap=document.getElementById('revealWrap');
+  const rc=['r1','r2','r3'],rl=['01','02','03'];
+  wrap.innerHTML=`
+    <div class="reveal-eyebrow">Tonight's pick</div>
+    <div class="reveal-winner-text">${esc(sorted[0]||'...')}</div>
+    <div class="reveal-rule"></div>
+    <div class="reveal-list">
+      ${sorted.map((m,i)=>{
+        const col=BAR_COLORS[mv.indexOf(m)]||'var(--ink)';
+        return `<div class="reveal-row ${rc[i]||'r3'}">
+          <span class="reveal-rank mono">${rl[i]||'—'}</span>
+          <div class="reveal-dot" style="background:${rc[i]==='r1'?'transparent':col};border-color:${rc[i]==='r1'?'var(--paper)':col};"></div>
+          <span class="reveal-rname">${esc(m)}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn" onclick="hostReset()">New night</button>`;
 }
 
 async function hostReset(){
@@ -659,6 +725,7 @@ function mJoinScreen(){
   document.getElementById('mName').addEventListener('keydown',e=>{if(e.key==='Enter')mJoin();});
   pollUntil(['submitting','voting','reveal']);
 }
+
 async function mJoin(){
   const name=(document.getElementById('mName').value||'').trim();
   if(!name){alert('Enter your name!');return;}
@@ -667,6 +734,7 @@ async function mJoin(){
   await dbSet(`/state/submissions/${key}`,{name,movies:[]});
   joined=true;mWait();
 }
+
 function mWait(){
   document.getElementById('mContent').innerHTML=`
     <div class="m-state">
@@ -676,6 +744,7 @@ function mWait(){
     </div>`;
   pollUntil(['submitting','voting','reveal']);
 }
+
 function mSubmitScreen(){
   if(mPoll)clearInterval(mPoll);
   document.getElementById('mContent').innerHTML=`
@@ -691,12 +760,14 @@ function mSubmitScreen(){
   renderMMovieList();
   pollUntil(['voting','reveal']);
 }
+
 function renderMMovieList(){
   const el=document.getElementById('mMovieList');if(!el)return;
   if(!myMovies.length){el.innerHTML='<p class="m-movie-empty">No picks yet</p>';return;}
   el.innerHTML=myMovies.map((m,i)=>`
     <div class="m-movie-item"><span>${esc(m)}</span><button class="m-movie-rm" onclick="mRemove(${i})">x</button></div>`).join('');
 }
+
 async function mAddMovie(){
   const inp=document.getElementById('mMovieInput');if(!inp)return;
   const val=(inp.value||'').trim();if(!val)return;
@@ -705,6 +776,7 @@ async function mAddMovie(){
   const key=myName.replace(/[.#$/\[\]]/g,'_');
   await dbSet(`/state/submissions/${key}`,{name:myName,movies:[...myMovies]});
 }
+
 async function mRemove(idx){
   myMovies.splice(idx,1);renderMMovieList();
   const key=myName.replace(/[.#$/\[\]]/g,'_');
@@ -725,16 +797,12 @@ function mVoteScreen(){
             <div class="mv-card-title">${esc(m)}</div>
           </div>
           <div class="mv-btns">
-            <button class="mv-btn" id="up${i}" onclick="mToggle(${i},1)">
-              <span class="mv-btn-icon">👍</span><span>For it</span>
-            </button>
-            <button class="mv-btn" id="dn${i}" onclick="mToggle(${i},-1)">
-              <span class="mv-btn-icon">👎</span><span>Against</span>
-            </button>
+            <button class="mv-btn" id="up${i}" onclick="mToggle(${i},1)" aria-label="Thumbs up">👍</button>
+            <button class="mv-btn" id="dn${i}" onclick="mToggle(${i},-1)" aria-label="Thumbs down">👎</button>
           </div>
         </div>`).join('')}
     </div>
-    <div class="mv-status" id="mvStatus">Tap to cast your votes</div>`;
+    <div class="mv-status" id="mvStatus">Tap to vote</div>`;
   pollUntil(['reveal']);
 }
 
@@ -744,6 +812,7 @@ async function mToggle(idx,dir){
   mUpdateVoteUI();
   await mPushVote(G.movies);
 }
+
 function mUpdateVoteUI(){
   const mv=G.movies||[];
   mv.forEach((m,i)=>{
@@ -752,12 +821,13 @@ function mUpdateVoteUI(){
   });
   const total=Object.keys(myVotes).length;
   const st=document.getElementById('mvStatus');if(!st)return;
-  if(!total){st.textContent='Tap to cast your votes';return;}
+  if(!total){st.textContent='Tap to vote';return;}
   const ups=Object.values(myVotes).filter(v=>v===1).length;
   const dns=Object.values(myVotes).filter(v=>v===-1).length;
-  const parts=[];if(ups)parts.push(`${ups} for`);if(dns)parts.push(`${dns} against`);
-  st.textContent=parts.join(', ')+' — votes live';
+  const parts=[];if(ups)parts.push(`${ups} 👍`);if(dns)parts.push(`${dns} 👎`);
+  st.textContent=parts.join('  ·  ')+' — live';
 }
+
 async function mPushVote(mv){
   const key=myName.replace(/[.#$/\[\]]/g,'_');
   const cur=await dbGet('/state/votes')||{};
