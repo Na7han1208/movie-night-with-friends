@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Movie Night — pick a film together</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Night</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap');
@@ -35,7 +35,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .btn-ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:var(--mute);border:2.5px solid var(--line);border-radius:var(--r);padding:18px 36px;font-family:'DM Sans',sans-serif;font-size:18px;cursor:pointer;transition:all .15s;}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink);}
 
-/* LOBBY */
+/* ══ LOBBY ══ */
 #sLobby{flex-direction:row;}
 .lobby-left{
   flex:0 0 54%;border-right:3px solid var(--ink);
@@ -52,7 +52,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .lobby-player-count{font-family:'DM Mono',monospace;font-size:7rem;font-weight:300;line-height:1;letter-spacing:-.04em;margin-bottom:.25rem;}
 .lobby-player-label{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-bottom:2rem;}
 .lobby-divider{height:3px;background:var(--ink);margin-bottom:2rem;}
-.player-chips{display:flex;flex-wrap:wrap;gap:10px;flex:1;align-content:flex-start;overflow-y:auto;max-height:50vh;}
+.player-chips{display:flex;flex-wrap:wrap;gap:10px;flex:1;align-content:flex-start;overflow:hidden;}
 .player-chip{
   display:flex;align-items:center;gap:9px;
   font-family:'DM Mono',monospace;font-size:1.05rem;
@@ -64,7 +64,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 @keyframes chipIn{from{opacity:0;transform:scale(.75);}to{opacity:1;transform:scale(1);}}
 .lobby-actions{margin-top:auto;display:flex;gap:1rem;}
 
-/* SUBMISSIONS */
+/* ══ SUBMISSIONS / FISHBOWL ══ */
 #sSubmit{flex-direction:column;}
 .submit-header{
   display:flex;align-items:center;justify-content:space-between;
@@ -76,7 +76,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .submit-stat-block{text-align:right;}
 .submit-count-big{font-family:'DM Mono',monospace;font-size:4rem;font-weight:300;line-height:1;letter-spacing:-.04em;}
 .fish-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-#fishCanvas{display:block;width:100%;height:100%;}
+#fishCanvas{display:block;}
 .fish-timer{
   position:absolute;bottom:2.5rem;right:3rem;
   font-family:'DM Mono',monospace;font-size:5rem;font-weight:300;letter-spacing:-.04em;line-height:1;
@@ -84,15 +84,15 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 }
 .submit-footer{padding:1.5rem 4rem;border-top:2.5px solid var(--paper3);display:flex;gap:1rem;justify-content:flex-end;flex-shrink:0;}
 
-/* HOST VOTE */
+/* ══ HOST VOTE ══ */
 #sHostVote{flex-direction:column;}
 .vote-header{
   display:flex;align-items:center;gap:2.5rem;
-  padding:2rem 3rem;border-bottom:3px solid var(--ink);flex-shrink:0;flex-wrap:wrap;
+  padding:2.5rem 5rem;border-bottom:3px solid var(--ink);flex-shrink:0;
 }
-.vote-header-title{font-family:'DM Mono',monospace;font-size:1rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);flex:1;}
+.vote-header-title{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);flex:1;}
 .vote-voter-pill{
-  font-family:'DM Mono',monospace;font-size:1rem;letter-spacing:.08em;
+  font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.08em;
   border:2.5px solid var(--ink);border-radius:var(--r);padding:8px 20px;
 }
 .vote-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
@@ -100,18 +100,18 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .vote-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1rem;font-weight:400;}
 .vote-btns{display:flex;gap:1rem;}
 
-.vote-bars-area{flex:1;display:flex;flex-direction:column;justify-content:stretch;padding:0;overflow-y:auto;}
+.vote-bars-area{flex:1;display:flex;flex-direction:column;justify-content:stretch;padding:0;}
 .vote-bar-row{
   flex:1;display:flex;align-items:center;
   border-bottom:2.5px solid var(--paper3);
-  padding:1rem 3rem;gap:2rem;
+  padding:0 5rem;gap:4rem;
   transition:background .3s;
 }
 .vote-bar-row:last-child{border-bottom:none;}
 .vote-bar-row.leading{background:var(--paper2);}
 .vote-bar-movie{
-  font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:400;
-  flex:0 0 35%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-family:'DM Mono',monospace;font-size:2.4rem;font-weight:400;
+  flex:0 0 38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   letter-spacing:-.01em;
 }
 .vote-bar-track-wrap{flex:1;display:flex;flex-direction:column;gap:.6rem;}
@@ -121,29 +121,29 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
   width:18px;height:18px;border-radius:50%;border:3px solid var(--ink);flex-shrink:0;
 }
 
-/* REVEAL */
+/* ══ REVEAL ══ */
 #sReveal{align-items:center;justify-content:center;}
 .reveal-wrap{width:min(900px,90vw);}
-.reveal-eyebrow{font-family:'DM Mono',monospace;font-size:1rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:1rem;}
-.reveal-winner-text{font-family:'DM Mono',monospace;font-size:4rem;font-weight:300;line-height:1.1;letter-spacing:-.03em;margin-bottom:2rem;}
-.reveal-rule{height:3px;background:var(--ink);margin-bottom:2rem;}
-.reveal-list{display:flex;flex-direction:column;gap:12px;margin-bottom:2rem;}
-.reveal-row{display:flex;align-items:center;gap:2rem;padding:1rem 2rem;border-radius:var(--r);}
+.reveal-eyebrow{font-family:'DM Mono',monospace;font-size:1.1rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:1.25rem;}
+.reveal-winner-text{font-family:'DM Mono',monospace;font-size:5.5rem;font-weight:300;line-height:1.05;letter-spacing:-.03em;margin-bottom:2.5rem;}
+.reveal-rule{height:3px;background:var(--ink);margin-bottom:2.5rem;}
+.reveal-list{display:flex;flex-direction:column;gap:12px;margin-bottom:2.5rem;}
+.reveal-row{display:flex;align-items:center;gap:2rem;padding:1.6rem 2.2rem;border-radius:var(--r);}
 .reveal-row.r1{background:var(--ink);color:var(--paper);}
 .reveal-row.r2{background:var(--paper2);border:2.5px solid var(--ink);}
 .reveal-row.r3{background:var(--paper2);border:2.5px solid var(--line);}
 .reveal-rank{font-family:'DM Mono',monospace;font-size:1rem;width:32px;color:var(--mute);}
 .reveal-row.r1 .reveal-rank{color:var(--ghost);}
-.reveal-rname{flex:1;font-size:1.3rem;font-weight:500;}
+.reveal-rname{flex:1;font-size:1.6rem;font-weight:500;}
 .reveal-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
 .reveal-row.r1 .reveal-dot{border:2.5px solid var(--paper);}
 .reveal-row.r2 .reveal-dot,.reveal-row.r3 .reveal-dot{border:2.5px solid var(--ink);}
 
-/* MOBILE */
+/* ══ MOBILE ══ */
 #sMobile{overflow-y:auto;}
 .m-scroll{padding:2rem 1.25rem;min-height:100%;display:flex;flex-direction:column;align-items:center;}
-.m-card{background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r);padding:2rem;width:100%;max-width:520px;}
-.m-brand{display:flex;align-items:center;gap:10px;margin-bottom:2rem;}
+.m-card{background:var(--paper);border:2.5px solid var(--ink);border-radius:var(--r);padding:2.5rem;width:100%;max-width:520px;}
+.m-brand{display:flex;align-items:center;gap:10px;margin-bottom:2.25rem;}
 .m-brand-bar{width:4px;height:22px;}
 .m-brand-title{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;letter-spacing:.04em;}
 .m-label{display:block;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;}
@@ -151,70 +151,164 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .m-input:focus{border-color:var(--ink);}
 .m-input::placeholder{color:var(--ghost);}
 .m-btn{width:100%;padding:18px;background:var(--ink);color:var(--paper);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:500;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s,transform .1s;}
+.m-btn:hover{opacity:.82;}
+.m-btn:active{transform:scale(.98);}
 .m-state{text-align:center;padding:2rem 0;}
 .m-state h3{font-family:'DM Mono',monospace;font-size:1.25rem;font-weight:400;margin-bottom:.75rem;}
 .m-state p{font-size:16px;color:var(--mute);line-height:1.7;}
 .m-chip{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;display:inline-block;}
-.m-phase-badge{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;}
+.m-phase-badge{display:flex;align-items:center;gap:10px;margin-bottom:1.75rem;}
 .m-phase-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
 .m-phase-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);}
-.m-add-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:1rem;}
-.m-add-input{width:100%;background:var(--paper2);border:2px solid var(--line);border-radius:var(--r);padding:16px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:18px;outline:none;}
+.m-add-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:1.25rem;}
+.m-add-input{width:100%;background:var(--paper2);border:2px solid var(--line);border-radius:var(--r);padding:16px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:18px;outline:none;transition:border .2s;}
 .m-add-input:focus{border-color:var(--ink);}
-.m-add-btn{padding:16px 20px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:26px;border:none;border-radius:var(--r);cursor:pointer;line-height:1;}
-.m-movie-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;max-height:45vh;overflow-y:auto;}
-.m-movie-item{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--ink);border-radius:var(--r);}
-.m-movie-item span{font-family:'DM Mono',monospace;font-size:16px;color:var(--paper);flex:1;}
-.m-movie-rm{background:transparent;border:none;color:var(--ghost);font-family:'DM Mono',monospace;font-size:22px;cursor:pointer;padding:0 4px;}
+.m-add-input::placeholder{color:var(--ghost);}
+.m-add-btn{padding:16px 20px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:26px;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;line-height:1;}
+.m-add-btn:hover{opacity:.75;}
+.m-movie-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
+.m-movie-item{display:flex;align-items:center;gap:14px;padding:18px 20px;background:var(--ink);border-radius:var(--r);animation:chipIn .22s ease;}
+.m-movie-item span{font-family:'DM Mono',monospace;font-size:18px;color:var(--paper);flex:1;line-height:1.3;}
+.m-movie-rm{background:transparent;border:none;color:var(--ghost);font-family:'DM Mono',monospace;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s;}
 .m-movie-rm:hover{color:var(--paper);}
-.m-movie-empty{font-size:15px;color:var(--ghost);font-style:italic;padding:8px 0;}
-
+.m-movie-empty{font-size:15px;color:var(--ghost);font-style:italic;padding:8px 0;margin-bottom:1.25rem;}
+/* vote */
 .mv-list{display:flex;flex-direction:column;gap:16px;margin-bottom:1rem;}
 .mv-card{border:2.5px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper2);}
-.mv-card-header{display:flex;align-items:center;gap:14px;padding:18px 22px;}
+.mv-card-header{display:flex;align-items:center;gap:14px;padding:20px 22px;}
 .mv-card-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
-.mv-card-title{font-size:18px;font-weight:500;flex:1;line-height:1.3;}
+.mv-card-title{font-size:20px;font-weight:500;flex:1;line-height:1.3;}
 .mv-btns{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--line);}
-.mv-btn{padding:16px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;border:none;background:var(--paper);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);transition:all .15s;}
+.mv-btn{padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;border:none;background:var(--paper);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);transition:all .15s;}
 .mv-btn:first-child{border-right:1px solid var(--line);}
 .mv-btn:hover{background:var(--paper2);}
 .mv-btn.up-on{background:#e6f9ed;color:#1a7a3a;}
 .mv-btn.dn-on{background:#fce8e5;color:#9a2a1a;}
-.mv-btn-icon{font-size:30px;line-height:1;}
+.mv-btn-icon{font-size:34px;line-height:1;}
 .mv-status{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--mute);text-align:center;padding:.75rem 0;}
 </style>
 </head>
 <body>
 
-<div class="map-bg"><svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice"><polyline points="80,200 280,200 420,340 680,340 820,480 1100,480" fill="none" stroke="#d63e2a" stroke-width="4"/><polyline points="160,80 160,320 320,480 600,480 800,280 1050,280" fill="none" stroke="#2a6dd6" stroke-width="4"/><polyline points="0,560 300,560 480,380 700,380 900,560 1200,560" fill="none" stroke="#2ab85a" stroke-width="4"/><polyline points="200,700 400,500 600,500 780,700" fill="none" stroke="#d6a42a" stroke-width="4"/><circle cx="280" cy="200" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/><circle cx="420" cy="340" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/><circle cx="680" cy="340" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/><circle cx="160" cy="320" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/><circle cx="320" cy="480" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/><circle cx="600" cy="480" r="11" fill="white" stroke="#0e0e12" stroke-width="3"/><circle cx="800" cy="280" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/><circle cx="480" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/><circle cx="700" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/><circle cx="400" cy="500" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/><circle cx="600" cy="500" r="7" fill="white" stroke="#d6a42a" stroke-width="3"/><circle cx="820" cy="480" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/></svg></div>
+<div class="map-bg">
+<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <polyline points="80,200 280,200 420,340 680,340 820,480 1100,480" fill="none" stroke="#d63e2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="160,80 160,320 320,480 600,480 800,280 1050,280" fill="none" stroke="#2a6dd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="0,560 300,560 480,380 700,380 900,560 1200,560" fill="none" stroke="#2ab85a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="200,700 400,500 600,500 780,700" fill="none" stroke="#d6a42a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="280" cy="200" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
+  <circle cx="420" cy="340" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="680" cy="340" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
+  <circle cx="160" cy="320" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/>
+  <circle cx="320" cy="480" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="600" cy="480" r="11" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="800" cy="280" r="7" fill="white" stroke="#2a6dd6" stroke-width="3"/>
+  <circle cx="480" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/>
+  <circle cx="700" cy="380" r="7" fill="white" stroke="#2ab85a" stroke-width="3"/>
+  <circle cx="400" cy="500" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
+  <circle cx="600" cy="500" r="7" fill="white" stroke="#d6a42a" stroke-width="3"/>
+  <circle cx="820" cy="480" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
+</svg>
+</div>
 
-<!-- LOBBY -->
-<div class="scr" id="sLobby"><div class="lobby-left"><div class="lobby-brand"><div class="lobby-brand-bar" style="background:var(--red)"></div><div class="lobby-brand-bar" style="background:var(--blue)"></div><span class="lobby-brand-title">movie night</span></div><div class="qr-outer" id="qrBox"></div><div class="lobby-scan-label">Scan to join</div></div><div class="lobby-right"><div class="lobby-player-count" id="pCount">0</div><div class="lobby-player-label">players joined</div><div class="lobby-divider"></div><div class="player-chips" id="playerChips"></div><div class="lobby-actions"><button class="btn" style="flex:1;" onclick="hostStartSubmissions()">Start submissions</button><button class="btn-ghost" onclick="hostReset()">Reset</button></div></div></div>
+<!-- ══ LOBBY ══ -->
+<div class="scr" id="sLobby">
+  <div class="lobby-left">
+    <div class="lobby-brand">
+      <div class="lobby-brand-bar" style="background:var(--red)"></div>
+      <div class="lobby-brand-bar" style="background:var(--blue)"></div>
+      <span class="lobby-brand-title">movie night</span>
+    </div>
+    <div class="qr-outer" id="qrBox"></div>
+    <div class="lobby-scan-label">Scan to join on your phone</div>
+  </div>
+  <div class="lobby-right">
+    <div class="lobby-player-count" id="pCount">0</div>
+    <div class="lobby-player-label">players joined</div>
+    <div class="lobby-divider"></div>
+    <div class="player-chips" id="playerChips">
+      <span style="font-size:16px;color:var(--ghost);font-style:italic;font-family:'DM Mono',monospace;">waiting for players...</span>
+    </div>
+    <div class="lobby-actions">
+      <button class="btn" style="flex:1;" id="mainBtn" onclick="hostStartSubmissions()">Start submissions</button>
+      <button class="btn-ghost" onclick="hostReset()">Reset</button>
+    </div>
+  </div>
+</div>
 
-<!-- SUBMISSIONS -->
-<div class="scr" id="sSubmit"><div class="submit-header"><div class="submit-header-left"><div><div class="submit-phase">phase 02</div><div class="submit-headline">Drop your movies in</div></div></div><div class="submit-stat-block"><div class="label" style="margin-bottom:.3rem;">movies added</div><div class="submit-count-big" id="fishMCount">0</div></div></div><div class="fish-stage"><canvas id="fishCanvas"></canvas><div class="fish-timer" id="fishTimer">3:00</div></div><div class="submit-footer"><button class="btn" onclick="hostStartVoting()">Start voting now</button><button class="btn-ghost" onclick="hostReset()">Reset</button></div></div>
+<!-- ══ SUBMISSIONS ══ -->
+<div class="scr" id="sSubmit">
+  <div class="submit-header">
+    <div class="submit-header-left">
+      <div>
+        <div class="submit-phase">phase 02</div>
+        <div class="submit-headline">Drop your movies in</div>
+      </div>
+    </div>
+    <div class="submit-stat-block">
+      <div class="label" style="margin-bottom:.3rem;">movies added</div>
+      <div class="submit-count-big" id="fishMCount">0</div>
+    </div>
+  </div>
+  <div class="fish-stage">
+    <canvas id="fishCanvas"></canvas>
+    <div class="fish-timer" id="fishTimer">3:00</div>
+  </div>
+  <div class="submit-footer">
+    <button class="btn" onclick="hostStartVoting()">Start voting now</button>
+    <button class="btn-ghost" onclick="hostReset()">Reset</button>
+  </div>
+</div>
 
-<!-- HOST VOTE -->
-<div class="scr" id="sHostVote"><div class="vote-header"><span class="vote-header-title">movie night — vote on your phone</span><div class="vote-voter-pill" id="vCount">0 voters</div><div class="vote-ring-wrap"><svg width="72" height="72" viewBox="0 0 72 72"><circle fill="none" stroke="#e0dbd0" stroke-width="5" cx="36" cy="36" r="28"/><circle id="vRingArc" fill="none" stroke="#0e0e12" stroke-width="5" stroke-linecap="round" cx="36" cy="36" r="28" stroke-dasharray="175.93" stroke-dashoffset="0"/></svg><div class="vote-ring-num" id="vRingTime">1:30</div></div><div class="vote-btns"><button class="btn" style="font-size:14px;padding:12px 24px;" onclick="hostEndVoting()">Reveal</button><button class="btn-ghost" style="font-size:14px;padding:12px 24px;" onclick="hostReset()">Reset</button></div></div><div class="vote-bars-area" id="vBarsArea"></div></div>
+<!-- ══ HOST VOTE ══ -->
+<div class="scr" id="sHostVote">
+  <div class="vote-header">
+    <span class="vote-header-title">movie night — vote on your phone</span>
+    <div class="vote-voter-pill" id="vCount">0 voters</div>
+    <div class="vote-ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle fill="none" stroke="#e0dbd0" stroke-width="5" cx="36" cy="36" r="28"/>
+        <circle id="vRingArc" fill="none" stroke="#0e0e12" stroke-width="5" stroke-linecap="round"
+          cx="36" cy="36" r="28" stroke-dasharray="175.93" stroke-dashoffset="0"/>
+      </svg>
+      <div class="vote-ring-num" id="vRingTime">1:30</div>
+    </div>
+    <div class="vote-btns">
+      <button class="btn" style="font-size:16px;padding:14px 28px;" onclick="hostEndVoting()">Reveal</button>
+      <button class="btn-ghost" style="font-size:16px;padding:14px 28px;" onclick="hostReset()">Reset</button>
+    </div>
+  </div>
+  <div class="vote-bars-area" id="vBarsArea"></div>
+</div>
 
-<!-- REVEAL -->
-<div class="scr" id="sReveal"><div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;"><div class="reveal-wrap"><div class="reveal-eyebrow">Tonight's pick</div><div class="reveal-winner-text" id="revWinner">...</div><div class="reveal-rule"></div><div class="reveal-list" id="revList"></div><button class="btn" onclick="hostReset()">New night</button></div></div></div>
+<!-- ══ REVEAL ══ -->
+<div class="scr" id="sReveal">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:4rem;">
+    <div class="reveal-wrap">
+      <div class="reveal-eyebrow">Tonight's pick</div>
+      <div class="reveal-winner-text" id="revWinner">...</div>
+      <div class="reveal-rule"></div>
+      <div class="reveal-list" id="revList"></div>
+      <button class="btn" onclick="hostReset()">New night</button>
+    </div>
+  </div>
+</div>
 
-<!-- MOBILE -->
-<div class="scr" id="sMobile"><div class="m-scroll"><div class="m-card"><div class="m-brand"><div class="m-brand-bar" style="background:var(--red)"></div><div class="m-brand-bar" style="background:var(--blue)"></div><span class="m-brand-title">movie night</span></div><div id="mContent"></div></div></div></div>
+<!-- ══ MOBILE ══ -->
+<div class="scr" id="sMobile">
+  <div class="m-scroll">
+    <div class="m-card">
+      <div class="m-brand">
+        <div class="m-brand-bar" style="background:var(--red)"></div>
+        <div class="m-brand-bar" style="background:var(--blue)"></div>
+        <span class="m-brand-title">movie night</span>
+      </div>
+      <div id="mContent"></div>
+    </div>
+  </div>
+</div>
 
 <script>
-// Helper: canvas roundRect
-if(!CanvasRenderingContext2D.prototype.roundRect){
-  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
-    if(w<2*r)r=w/2;if(h<2*r)r=h/2;
-    this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);
-    this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-    this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);
-    this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);return this;
-  };
-}
-
 const ROOM_ID='room_'+getOrMakeRoom();
 const DB_URL='https://sidequest-movie-night-default-rtdb.europe-west1.firebasedatabase.app/';
 function getOrMakeRoom(){
@@ -222,7 +316,7 @@ function getOrMakeRoom(){
   if(p.get('room'))return p.get('room');
   const id=Math.random().toString(36).slice(2,8);
   const u=new URL(location.href);u.searchParams.set('room',id);
-  history.replaceState({},'',u);return id;
+  history.replaceState({},''  ,u);return id;
 }
 const IS_MOBILE=new URLSearchParams(location.search).has('vote');
 const P1=180,P2=90,CIRC_V=175.93;
@@ -253,7 +347,7 @@ function show(id){
   },activeScr?280:0);
 }
 
-/* FISHBOWL PHYSICS */
+/* ══ PHYSICS FISHBOWL ══ */
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
 const GRAV=0.38,DAMP=0.58,FRIC=0.982;
 const FONT_POOL=[26,30,34,38,42];
@@ -262,15 +356,9 @@ const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a'];
 function initFish(){
   cvs=document.getElementById('fishCanvas');
   if(!cvs)return;
-  const resizeObserver=()=>{
-    if(!cvs.parentElement)return;
-    CW=cvs.parentElement.clientWidth;
-    CH=cvs.parentElement.clientHeight;
-    cvs.width=CW;cvs.height=CH;
-    if(ctx)ctx.clearRect(0,0,CW,CH);
-  };
-  resizeObserver();
-  window.addEventListener('resize',resizeObserver);
+  const stage=cvs.parentElement;
+  CW=stage.clientWidth;CH=stage.clientHeight;
+  cvs.width=CW;cvs.height=CH;
   ctx=cvs.getContext('2d');
   balls=[];
   if(raf)cancelAnimationFrame(raf);
@@ -278,7 +366,7 @@ function initFish(){
 }
 
 function dropBall(text){
-  if(!cvs||!ctx||CW===0||CH===0)return;
+  if(!cvs||!ctx)return;
   const fs=FONT_POOL[Math.floor(Math.random()*FONT_POOL.length)];
   ctx.font=`500 ${fs}px 'DM Mono',monospace`;
   const tw=ctx.measureText(text).width;
@@ -294,9 +382,9 @@ function dropBall(text){
 }
 
 function fishLoop(){
-  if(!ctx||CW===0||CH===0)return;
+  if(!ctx)return;
   ctx.clearRect(0,0,CW,CH);
-  const cx=CW/2,cy=CH/2,rx=Math.max(20,CW/2-12),ry=Math.max(20,CH/2-12);
+  const cx=CW/2,cy=CH/2,rx=CW/2-12,ry=CH/2-12;
 
   ctx.save();
   ctx.strokeStyle='#0e0e12';ctx.lineWidth=3;
@@ -317,6 +405,7 @@ function fishLoop(){
       b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;
       b.rotV+=(Math.random()-.5)*.12;
     }
+
     for(let j=i+1;j<balls.length;j++){
       const o=balls[j];
       const ddx=o.x-b.x,ddy=o.y-b.y,dd=Math.hypot(ddx,ddy);
@@ -330,10 +419,11 @@ function fishLoop(){
         b.rotV+=imp*.1;o.rotV-=imp*.1;
       }
     }
+
     ctx.save();
     ctx.translate(b.x,b.y);ctx.rotate(b.rot);
     const hw=b.pw/2,hh=b.ph/2;
-    ctx.beginPath();ctx.roundRect(-hw,-hh,b.pw,b.ph,hh).fill();
+    ctx.beginPath();ctx.roundRect(-hw,-hh,b.pw,b.ph,hh);
     ctx.fillStyle=b.col;ctx.fill();
     ctx.fillStyle='#f5f2eb';
     ctx.font=`500 ${b.fs}px 'DM Mono',monospace`;
@@ -345,7 +435,7 @@ function fishLoop(){
   raf=requestAnimationFrame(fishLoop);
 }
 
-/* HOST LOGIC */
+/* ══ HOST LOBBY ══ */
 async function hostLobby(){
   show('sLobby');
   const vUrl=new URL(location.href);
@@ -375,7 +465,7 @@ function updateLobbyUI(){
   const subs=G.submissions?Object.values(G.submissions):[];
   document.getElementById('pCount').textContent=subs.length;
   const chips=document.getElementById('playerChips');
-  if(!subs.length){chips.innerHTML='<span style="font-size:16px;color:var(--ghost);font-style:italic;">waiting for players...</span>';return;}
+  if(!subs.length){chips.innerHTML='<span style="font-size:16px;color:var(--ghost);font-style:italic;font-family:\'DM Mono\',monospace;">waiting for players...</span>';return;}
   chips.innerHTML=subs.map((s,i)=>{
     const col=CHIP_COLORS[i%CHIP_COLORS.length];
     return `<div class="player-chip"><div class="player-chip-dot" style="background:${col}"></div>${esc(s.name)}</div>`;
@@ -383,7 +473,8 @@ function updateLobbyUI(){
 }
 
 async function hostStartSubmissions(){
-  clearAll();G=await dbGet('/state')||G;
+  clearAll();
+  G=await dbGet('/state')||G;
   if(G.phase!=='waiting')return;
   const ns={...G,phase:'submitting',p1Start:Date.now()};
   await dbSet('/state',ns);G=ns;
@@ -393,13 +484,15 @@ async function hostStartSubmissions(){
 let seenMovies=new Set();
 function hostSubmitScreen(){
   show('sSubmit');
-  seenMovies.clear();
+  seenMovies=new Set();
   setTimeout(()=>{
     initFish();
+    // drop existing movies
     if(G.submissions)Object.values(G.submissions).forEach(s=>(s.movies||[]).forEach(m=>{
       if(!seenMovies.has(m)){seenMovies.add(m);setTimeout(()=>dropBall(m),100+Math.random()*400);}
     }));
   },380);
+
   tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();return;}
@@ -410,7 +503,7 @@ function hostSubmitScreen(){
     if(G.p1Start){
       const el=Math.min((Date.now()-G.p1Start)/1000,P1);
       const rem=Math.max(0,P1-el);
-      const mm=Math.floor(rem/60),ss=Math.floor(rem%60);
+      const mm=Math.floor(rem/60),ss=Math.round(rem%60);
       document.getElementById('fishTimer').textContent=`${mm}:${String(ss).padStart(2,'0')}`;
       if(el>=P1){clearAll();await hostStartVoting();}
     }
@@ -432,6 +525,7 @@ async function hostStartVoting(){
   await dbSet('/state',ns);G=ns;hostVote();
 }
 
+/* ══ HOST VOTE ══ */
 function hostVote(){
   show('sHostVote');
   renderVoteBars();
@@ -440,8 +534,9 @@ function hostVote(){
     if(G.phase!=='voting'){clearAll();return;}
     renderVoteBars();updateVoteRing();
     if((Date.now()-G.p2Start)/1000>=P2){clearAll();await hostEndVoting();}
-  },1000);
+  },1500);
 }
+
 function renderVoteBars(){
   const mv=G.movies||[],vt=G.votes||{};
   const vc=G.voters?Object.keys(G.voters).filter(k=>G.voters[k]).length:0;
@@ -450,42 +545,62 @@ function renderVoteBars(){
   const minS=Math.min(...scores),maxS=Math.max(...scores);
   const range=maxS-minS||1;
   const winner=scores.indexOf(Math.max(...scores));
+
   document.getElementById('vBarsArea').innerHTML=mv.map((m,i)=>{
     const pct=Math.round(((scores[i]-minS)/range)*80+10);
     const isLead=i===winner&&vc>0;
-    return `<div class="vote-bar-row${isLead?' leading':''}"><div class="vote-bar-movie">${esc(m)}</div><div class="vote-bar-track-wrap"><div class="vote-bar-track"><div class="vote-bar-fill" style="width:${pct}%;background:${BAR_COLORS[i]};"></div></div></div><div class="vote-bar-dot" style="background:${isLead?BAR_COLORS[i]:'var(--paper2)'};border-color:${isLead?BAR_COLORS[i]:'var(--ink)'};"></div></div>`;
+    return `<div class="vote-bar-row${isLead?' leading':''}">
+      <div class="vote-bar-movie">${esc(m)}</div>
+      <div class="vote-bar-track-wrap">
+        <div class="vote-bar-track">
+          <div class="vote-bar-fill" style="width:${pct}%;background:${BAR_COLORS[i]};"></div>
+        </div>
+      </div>
+      <div class="vote-bar-dot" style="background:${isLead?BAR_COLORS[i]:'var(--paper2)'};border-color:${isLead?BAR_COLORS[i]:'var(--ink)'};"></div>
+    </div>`;
   }).join('');
 }
+
 function updateVoteRing(){
   const el=(Date.now()-G.p2Start)/1000;
   const rem=Math.max(0,P2-el);
-  const mm=Math.floor(rem/60),ss=Math.floor(rem%60);
+  const mm=Math.floor(rem/60),ss=Math.round(rem%60);
   document.getElementById('vRingTime').textContent=`${mm}:${String(ss).padStart(2,'0')}`;
   document.getElementById('vRingArc').style.strokeDashoffset=CIRC_V*(1-rem/P2);
 }
+
 async function hostEndVoting(){
   G=await dbGet('/state')||G;
   await dbPatch('/state',{phase:'reveal'});G.phase='reveal';
   showReveal();
 }
+
+/* ══ REVEAL ══ */
 function showReveal(){
   show('sReveal');
   const mv=G.movies||[],vt=G.votes||{};
   const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
   document.getElementById('revWinner').textContent=sorted[0]||'...';
   const rc=['r1','r2','r3'];const rl=['01','02','03'];
+  const maxSc=Math.max(...sorted.map(m=>vt[m]||0),1);
   document.getElementById('revList').innerHTML=sorted.map((m,i)=>{
     const col=BAR_COLORS[mv.indexOf(m)]||'var(--ink)';
-    return `<div class="reveal-row ${rc[i]||'r3'}"><span class="reveal-rank mono">${rl[i]}</span><div class="reveal-dot" style="background:${rc[i]==='r1'?'transparent':col};border-color:${rc[i]==='r1'?'var(--paper)':col};"></div><span class="reveal-rname">${esc(m)}</span></div>`;
+    return `<div class="reveal-row ${rc[i]||'r3'}">
+      <span class="reveal-rank mono">${rl[i]}</span>
+      <div class="reveal-dot" style="background:${rc[i]==='r1'?'transparent':col};border-color:${rc[i]==='r1'?'var(--paper)':col};"></div>
+      <span class="reveal-rname">${esc(m)}</span>
+    </div>`;
   }).join('');
 }
+
 async function hostReset(){
   clearAll();if(raf)cancelAnimationFrame(raf);
   await dbDelete();location.href=location.pathname;
 }
 
-/* MOBILE */
+/* ══ MOBILE ══ */
 let myName='',myMovies=[],myVotes={},joined=false,mPoll=null,lastSent={};
+
 async function mobileInit(){
   show('sMobile');
   G=await dbGet('/state')||{};
@@ -495,8 +610,13 @@ async function mobileInit(){
   else if(ph==='voting'){mVoteScreen();}
   else if(ph==='reveal'){mRevealScreen();}
 }
+
 function mJoinScreen(){
-  document.getElementById('mContent').innerHTML=`<div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--red)"></div><span class="m-phase-label">join lobby</span></div><label class="m-label">Your name</label><input class="m-input" id="mName" placeholder="Enter your name..." maxlength="30"/><button class="m-btn" onclick="mJoin()">Join</button>`;
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--red)"></div><span class="m-phase-label">join lobby</span></div>
+    <label class="m-label">Your name</label>
+    <input class="m-input" id="mName" placeholder="Enter your name..." maxlength="30"/>
+    <button class="m-btn" onclick="mJoin()">Join</button>`;
   if(myName)document.getElementById('mName').value=myName;
   document.getElementById('mName').addEventListener('keydown',e=>{if(e.key==='Enter')mJoin();});
   pollUntil(['submitting','voting','reveal']);
@@ -505,17 +625,30 @@ async function mJoin(){
   const name=(document.getElementById('mName').value||'').trim();
   if(!name){alert('Enter your name!');return;}
   myName=name;
-  const key=name.replace(/[.#$/[\]]/g,'_');
+  const key=name.replace(/[.#$/\[\]]/g,'_');
   await dbSet(`/state/submissions/${key}`,{name,movies:[]});
   joined=true;mWait();
 }
 function mWait(){
-  document.getElementById('mContent').innerHTML=`<div class="m-state"><h3>You're in</h3><p>Waiting for the host to open submissions...</p><div style="margin-top:1.5rem;"><div class="m-label" style="margin-bottom:.5rem;">Logged in as</div><div class="m-chip">${esc(myName)}</div></div></div>`;
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-state">
+      <h3>You're in</h3>
+      <p>Waiting for the host to open submissions...</p>
+      <div style="margin-top:1.5rem;"><div class="m-label" style="margin-bottom:.5rem;">Logged in as</div><div class="m-chip">${esc(myName)}</div></div>
+    </div>`;
   pollUntil(['submitting','voting','reveal']);
 }
 function mSubmitScreen(){
   if(mPoll)clearInterval(mPoll);
-  document.getElementById('mContent').innerHTML=`<div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--blue)"></div><span class="m-phase-label">add your picks</span></div><p style="font-family:'DM Mono',monospace;font-size:12px;color:var(--mute);margin-bottom:1rem;">as ${esc(myName)}</p><div class="m-movie-list" id="mMovieList"></div><div class="m-add-row"><input class="m-add-input" id="mMovieInput" placeholder="Type a movie..." maxlength="80"/><button class="m-add-btn" onclick="mAddMovie()">+</button></div><p style="font-size:11px;color:var(--ghost);text-align:center;">add as many as you like</p>`;
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--blue)"></div><span class="m-phase-label">add your picks</span></div>
+    <p style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--mute);margin-bottom:1.5rem;">as ${esc(myName)}</p>
+    <div class="m-movie-list" id="mMovieList"></div>
+    <div class="m-add-row">
+      <input class="m-add-input" id="mMovieInput" placeholder="Type a movie..." maxlength="80" autocomplete="off"/>
+      <button class="m-add-btn" onclick="mAddMovie()">+</button>
+    </div>
+    <p style="font-size:12px;color:var(--ghost);text-align:center;font-family:'DM Mono',monospace;">add as many as you like</p>`;
   document.getElementById('mMovieInput').addEventListener('keydown',e=>{if(e.key==='Enter')mAddMovie();});
   renderMMovieList();
   pollUntil(['voting','reveal']);
@@ -523,27 +656,50 @@ function mSubmitScreen(){
 function renderMMovieList(){
   const el=document.getElementById('mMovieList');if(!el)return;
   if(!myMovies.length){el.innerHTML='<p class="m-movie-empty">No picks yet</p>';return;}
-  el.innerHTML=myMovies.map((m,i)=>`<div class="m-movie-item"><span>${esc(m)}</span><button class="m-movie-rm" onclick="mRemove(${i})">✕</button></div>`).join('');
+  el.innerHTML=myMovies.map((m,i)=>`
+    <div class="m-movie-item"><span>${esc(m)}</span><button class="m-movie-rm" onclick="mRemove(${i})">x</button></div>`).join('');
 }
 async function mAddMovie(){
   const inp=document.getElementById('mMovieInput');if(!inp)return;
   const val=(inp.value||'').trim();if(!val)return;
   myMovies.push(val);inp.value='';inp.focus();
   renderMMovieList();
-  const key=myName.replace(/[.#$/[\]]/g,'_');
+  const key=myName.replace(/[.#$/\[\]]/g,'_');
   await dbSet(`/state/submissions/${key}`,{name:myName,movies:[...myMovies]});
 }
 async function mRemove(idx){
   myMovies.splice(idx,1);renderMMovieList();
-  const key=myName.replace(/[.#$/[\]]/g,'_');
+  const key=myName.replace(/[.#$/\[\]]/g,'_');
   await dbSet(`/state/submissions/${key}`,{name:myName,movies:[...myMovies]});
 }
+
 function mVoteScreen(){
   if(mPoll)clearInterval(mPoll);
   const mv=G.movies||[];myVotes={};lastSent={};
-  document.getElementById('mContent').innerHTML=`<div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--grn)"></div><span class="m-phase-label">vote</span></div><p style="font-size:12px;color:var(--mute);margin-bottom:1rem;">as ${esc(myName)}</p><div class="mv-list">${mv.map((m,i)=>`<div class="mv-card"><div class="mv-card-header"><div class="mv-card-dot" style="background:${BAR_COLORS[i]}"></div><div class="mv-card-title">${esc(m)}</div></div><div class="mv-btns"><button class="mv-btn" id="up${i}" onclick="mToggle(${i},1)"><span class="mv-btn-icon">👍</span><span>For it</span></button><button class="mv-btn" id="dn${i}" onclick="mToggle(${i},-1)"><span class="mv-btn-icon">👎</span><span>Against</span></button></div></div>`).join('')}</div><div class="mv-status" id="mvStatus">Tap to cast your votes</div>`;
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--grn)"></div><span class="m-phase-label">vote</span></div>
+    <p style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--mute);margin-bottom:1.5rem;">as ${esc(myName)}</p>
+    <div class="mv-list">
+      ${mv.map((m,i)=>`
+        <div class="mv-card" id="mvc${i}">
+          <div class="mv-card-header">
+            <div class="mv-card-dot" style="background:${BAR_COLORS[i]}"></div>
+            <div class="mv-card-title">${esc(m)}</div>
+          </div>
+          <div class="mv-btns">
+            <button class="mv-btn" id="up${i}" onclick="mToggle(${i},1)">
+              <span class="mv-btn-icon">👍</span><span>For it</span>
+            </button>
+            <button class="mv-btn" id="dn${i}" onclick="mToggle(${i},-1)">
+              <span class="mv-btn-icon">👎</span><span>Against</span>
+            </button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="mv-status" id="mvStatus">Tap to cast your votes</div>`;
   pollUntil(['reveal']);
 }
+
 async function mToggle(idx,dir){
   const m=G.movies[idx];
   myVotes[m]===dir?delete myVotes[m]:(myVotes[m]=dir);
@@ -552,7 +708,10 @@ async function mToggle(idx,dir){
 }
 function mUpdateVoteUI(){
   const mv=G.movies||[];
-  mv.forEach((m,i)=>{document.getElementById('up'+i)?.classList.toggle('up-on',myVotes[m]===1);document.getElementById('dn'+i)?.classList.toggle('dn-on',myVotes[m]===-1);});
+  mv.forEach((m,i)=>{
+    document.getElementById('up'+i)?.classList.toggle('up-on',myVotes[m]===1);
+    document.getElementById('dn'+i)?.classList.toggle('dn-on',myVotes[m]===-1);
+  });
   const total=Object.keys(myVotes).length;
   const st=document.getElementById('mvStatus');if(!st)return;
   if(!total){st.textContent='Tap to cast your votes';return;}
@@ -562,7 +721,7 @@ function mUpdateVoteUI(){
   st.textContent=parts.join(', ')+' — votes live';
 }
 async function mPushVote(mv){
-  const key=myName.replace(/[.#$/[\]]/g,'_');
+  const key=myName.replace(/[.#$/\[\]]/g,'_');
   const cur=await dbGet('/state/votes')||{};
   const patch={};
   for(const[m,v]of Object.entries(lastSent))patch[m]=(cur[m]||0)-v;
@@ -571,12 +730,18 @@ async function mPushVote(mv){
   await dbPatch('/state/voters',{[key]:Object.keys(myVotes).length>0});
   if(Object.keys(patch).length)await dbPatch('/state/votes',patch);
 }
+
 function mRevealScreen(){
   if(mPoll)clearInterval(mPoll);
   const mv=G.movies||[],vt=G.votes||{};
   const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
-  document.getElementById('mContent').innerHTML=`<div class="m-state"><div class="m-label" style="margin-bottom:.75rem;">Tonight's pick</div><h3 style="font-size:1.5rem;font-family:'DM Mono',monospace;font-weight:300;">${esc(sorted[0]||'...')}</h3></div>`;
+  document.getElementById('mContent').innerHTML=`
+    <div class="m-state">
+      <div class="m-label" style="margin-bottom:.75rem;">Tonight's pick</div>
+      <h3 style="font-size:1.5rem;font-family:'DM Mono',monospace;font-weight:300;">${esc(sorted[0]||'...')}</h3>
+    </div>`;
 }
+
 function pollUntil(phases){
   if(mPoll)clearInterval(mPoll);
   mPoll=setInterval(async()=>{
@@ -587,7 +752,13 @@ function pollUntil(phases){
 
 (async function boot(){
   if(IS_MOBILE){await mobileInit();}
-  else{const st=await dbGet('/state');G=st||{};if(G.phase==='voting')hostVote();else if(G.phase==='submitting')hostSubmitScreen();else if(G.phase==='reveal')showReveal();else hostLobby();}
+  else{
+    const st=await dbGet('/state');G=st||{};
+    if(G.phase==='voting')hostVote();
+    else if(G.phase==='submitting')hostSubmitScreen();
+    else if(G.phase==='reveal')showReveal();
+    else hostLobby();
+  }
 })();
 </script>
 </body>
