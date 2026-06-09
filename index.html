@@ -59,8 +59,8 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .submit-headline{font-family:'DM Mono',monospace;font-size:2.2rem;font-weight:300;letter-spacing:-.02em;}
 .submit-stat-block{text-align:right;}
 .submit-count-big{font-family:'DM Mono',monospace;font-size:4rem;font-weight:300;line-height:1;letter-spacing:-.04em;}
-.fish-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-#fishCanvas{display:block;}
+.fish-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:stretch;justify-content:center;}
+#fishCanvas{display:block;width:100%;height:100%;}
 .fish-timer{position:absolute;bottom:2.5rem;right:3rem;font-family:'DM Mono',monospace;font-size:5rem;font-weight:300;letter-spacing:-.04em;line-height:1;color:var(--ink);opacity:.18;pointer-events:none;}
 .submit-footer{padding:1.5rem 4rem;border-top:2.5px solid var(--paper3);display:flex;gap:1rem;justify-content:flex-end;flex-shrink:0;}
 
@@ -187,7 +187,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
     <div class="lobby-player-label">players joined</div>
     <div class="lobby-divider"></div>
     <div class="player-chips" id="playerChips">
-      <span style="font-size:16px;color:var(--ghost);font-style:italic;font-family:'DM Mono',monospace;">waiting for players...</span>
+      <span id="lobbyEmpty" style="font-size:16px;color:var(--ghost);font-style:italic;font-family:'DM Mono',monospace;">waiting for players...</span>
     </div>
     <div class="lobby-actions">
       <button class="btn" style="flex:1;" onclick="hostStartSubmissions()">Start submissions</button>
@@ -302,16 +302,25 @@ function show(id){
   },activeScr?280:0);
 }
 
-/* ══ PHYSICS FISHBOWL ══ */
+/* ══ PHYSICS U-BOWL ══ */
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
-const GRAV=0.32,DAMP=0.52,FRIC=0.975;
-const BALL_R_MIN=38,BALL_R_MAX=54;
-const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a'];
-const BOWL_R_FRAC=0.44;
+const GRAV=0.38,DAMP=0.48,FRIC=0.978;
+const BALL_R_MIN=52,BALL_R_MAX=72;
+const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a','#8b5cf6','#d6a42a'];
 
-function getBowl(){
-  const r=Math.min(CW,CH)*BOWL_R_FRAC;
-  return{cx:CW/2,cy:CH/2,r};
+/* Build the U-shape as a series of wall segments.
+   The bowl is a rectangle open at the top, with a rounded bottom.
+   We define it in canvas-local coords and recompute on resize. */
+let uBowl={x:0,y:0,w:0,h:0,rx:0};
+
+function getUBowl(){
+  const pad=40;
+  const x=pad;
+  const y=Math.round(CH*0.06);
+  const w=CW-pad*2;
+  const h=CH-y-pad;
+  const rx=Math.min(w*0.18,h*0.28);
+  return{x,y,w,h,rx};
 }
 
 function initFish(){
@@ -321,20 +330,81 @@ function initFish(){
   CW=stage.clientWidth;CH=stage.clientHeight;
   cvs.width=CW;cvs.height=CH;
   ctx=cvs.getContext('2d');
+  uBowl=getUBowl();
   balls=[];
   if(raf)cancelAnimationFrame(raf);
   fishLoop();
+}
+
+/* Resolve a ball against the U-bowl walls.
+   The bowl has: left wall, right wall, flat bottom, and two bottom corners (quarter-circles). */
+function resolveUBowl(b){
+  const{x,y,w,h,rx}=uBowl;
+  const right=x+w, bottom=y+h;
+  const innerBottom=bottom-rx;
+  const innerLeft=x+rx;
+  const innerRight=right-rx;
+
+  // Left straight wall
+  if(b.x-b.r<x){
+    b.x=x+b.r;
+    b.vx=Math.abs(b.vx)*DAMP;
+  }
+  // Right straight wall
+  if(b.x+b.r>right){
+    b.x=right-b.r;
+    b.vx=-Math.abs(b.vx)*DAMP;
+  }
+  // Flat bottom (between the two corner arcs)
+  if(b.x>=innerLeft&&b.x<=innerRight&&b.y+b.r>bottom){
+    b.y=bottom-b.r;
+    b.vy=-Math.abs(b.vy)*DAMP;
+    b.vx*=FRIC;
+  }
+  // Bottom-left corner arc
+  if(b.x<innerLeft&&b.y>innerBottom){
+    const cx=innerLeft,cy=innerBottom;
+    const dx=b.x-cx,dy=b.y-cy;
+    const dist=Math.hypot(dx,dy);
+    const minDist=rx+b.r;
+    // only push outward if inside the arc zone
+    if(dist<minDist&&dist>0.01){
+      const nx=dx/dist,ny=dy/dist;
+      b.x=cx+nx*minDist;b.y=cy+ny*minDist;
+      const dot=b.vx*nx+b.vy*ny;
+      if(dot<0){
+        b.vx=(b.vx-2*dot*nx)*DAMP;
+        b.vy=(b.vy-2*dot*ny)*DAMP;
+      }
+    }
+  }
+  // Bottom-right corner arc
+  if(b.x>innerRight&&b.y>innerBottom){
+    const cx=innerRight,cy=innerBottom;
+    const dx=b.x-cx,dy=b.y-cy;
+    const dist=Math.hypot(dx,dy);
+    const minDist=rx+b.r;
+    if(dist<minDist&&dist>0.01){
+      const nx=dx/dist,ny=dy/dist;
+      b.x=cx+nx*minDist;b.y=cy+ny*minDist;
+      const dot=b.vx*nx+b.vy*ny;
+      if(dot<0){
+        b.vx=(b.vx-2*dot*nx)*DAMP;
+        b.vy=(b.vy-2*dot*ny)*DAMP;
+      }
+    }
+  }
 }
 
 function dropBall(text){
   if(!cvs||!ctx)return;
   const r=BALL_R_MIN+Math.random()*(BALL_R_MAX-BALL_R_MIN);
   const col=PILL_COLORS[Math.floor(Math.random()*PILL_COLORS.length)];
-  const bowl=getBowl();
+  const{x,w}=uBowl;
   balls.push({
-    x:bowl.cx+(Math.random()-.5)*bowl.r*0.3,
+    x:x+w*0.2+Math.random()*w*0.6,
     y:-r*2-10,
-    vx:(Math.random()-.5)*3,vy:0,
+    vx:(Math.random()-.5)*4,vy:0,
     text,r,col,
     highlight:false,selected:false
   });
@@ -345,76 +415,108 @@ function removeBall(text){
   if(idx!==-1)balls.splice(idx,1);
 }
 
+function drawUBowlOutline(){
+  const{x,y,w,h,rx}=uBowl;
+  const right=x+w,bottom=y+h;
+  ctx.beginPath();
+  // Start top-left, go down left wall, round bottom-left corner,
+  // across bottom, round bottom-right corner, up right wall, stop at top-right
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, bottom-rx);
+  ctx.arcTo(x, bottom, x+rx, bottom, rx);
+  ctx.lineTo(right-rx, bottom);
+  ctx.arcTo(right, bottom, right, bottom-rx, rx);
+  ctx.lineTo(right, y);
+  ctx.strokeStyle='#0e0e12';
+  ctx.lineWidth=3;
+  ctx.stroke();
+}
+
 function fishLoop(){
   if(!ctx)return;
   ctx.clearRect(0,0,CW,CH);
-  const bowl=getBowl();
-  const{cx,cy,r}=bowl;
 
+  // Draw U outline
+  drawUBowlOutline();
+
+  // Clip to U interior
+  const{x,y,w,h,rx}=uBowl;
+  const right=x+w,bottom=y+h;
   ctx.save();
-  ctx.strokeStyle='#0e0e12';ctx.lineWidth=3;
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.arc(cx,cy,r-2,0,Math.PI*2);ctx.clip();
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x,bottom-rx);
+  ctx.arcTo(x,bottom,x+rx,bottom,rx);
+  ctx.lineTo(right-rx,bottom);
+  ctx.arcTo(right,bottom,right,bottom-rx,rx);
+  ctx.lineTo(right,y);
+  ctx.lineTo(x,y);
+  ctx.clip();
 
   for(let i=0;i<balls.length;i++){
     const b=balls[i];
     b.vy+=GRAV;b.vx*=FRIC;b.vy*=FRIC;
     b.x+=b.vx;b.y+=b.vy;
 
-    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy);
-    const maxDist=r-b.r-2;
-    if(dist>maxDist&&dist>0.01){
-      const nx=dx/dist,ny=dy/dist;
-      b.x=cx+nx*maxDist;b.y=cy+ny*maxDist;
-      const dot=b.vx*nx+b.vy*ny;
-      b.vx=(b.vx-2*dot*nx)*DAMP;
-      b.vy=(b.vy-2*dot*ny)*DAMP;
-    }
+    resolveUBowl(b);
 
+    // Ball-ball collisions
     for(let j=i+1;j<balls.length;j++){
       const o=balls[j];
       const ddx=o.x-b.x,ddy=o.y-b.y,dd=Math.hypot(ddx,ddy);
-      const md=b.r+o.r;
+      const md=b.r+o.r+1;
       if(dd<md&&dd>0.01){
         const nx=ddx/dd,ny=ddy/dd,ov=(md-dd)*0.5;
         b.x-=nx*ov;b.y-=ny*ov;o.x+=nx*ov;o.y+=ny*ov;
-        const dv=(b.vx-o.vx)*nx+(b.vy-o.vy)*ny,imp=dv*0.55;
+        const dv=(b.vx-o.vx)*nx+(b.vy-o.vy)*ny,imp=dv*0.5;
         b.vx-=imp*nx;b.vy-=imp*ny;o.vx+=imp*nx;o.vy+=imp*ny;
       }
     }
 
+    // Draw ball
     ctx.save();
     ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
     if(b.selected){
       ctx.fillStyle='#f5f2eb';ctx.fill();
-      ctx.strokeStyle=b.col;ctx.lineWidth=4;ctx.stroke();
+      ctx.strokeStyle=b.col;ctx.lineWidth=5;ctx.stroke();
     } else if(b.highlight){
       ctx.fillStyle=b.col;ctx.fill();
-      ctx.strokeStyle='#f5f2eb';ctx.lineWidth=3;ctx.stroke();
+      ctx.strokeStyle='#f5f2eb';ctx.lineWidth=4;ctx.stroke();
     } else {
       ctx.fillStyle=b.col;ctx.fill();
     }
 
-    const maxW=(b.r*2)-16;
-    let fs=15;
-    ctx.font=`500 ${fs}px 'DM Mono',monospace`;
-    while(ctx.measureText(b.text).width>maxW&&fs>8){fs--;ctx.font=`500 ${fs}px 'DM Mono',monospace`;}
-
-    ctx.fillStyle=b.selected?b.col:'#f5f2eb';
-    ctx.textAlign='center';ctx.textBaseline='middle';
+    // Text rendering — larger font, tight word-wrap
+    const maxW=(b.r*2)-22;
+    const textColor=b.selected?b.col:'#f5f2eb';
+    ctx.fillStyle=textColor;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
 
     const words=b.text.split(' ');
-    if(words.length>1&&ctx.measureText(b.text).width>maxW){
-      const mid=Math.ceil(words.length/2);
-      const l1=words.slice(0,mid).join(' '),l2=words.slice(mid).join(' ');
-      let lfs=fs;
-      ctx.font=`500 ${lfs}px 'DM Mono',monospace`;
-      while((ctx.measureText(l1).width>maxW||ctx.measureText(l2).width>maxW)&&lfs>7){lfs--;ctx.font=`500 ${lfs}px 'DM Mono',monospace`;}
-      ctx.fillText(l1,b.x,b.y-lfs*0.7);
-      ctx.fillText(l2,b.x,b.y+lfs*0.7);
+    let lines=[];
+    if(words.length===1){
+      lines=[b.text];
     } else {
-      ctx.fillText(b.text,b.x,b.y+1);
+      // Greedy line wrap into 2 lines
+      const mid=Math.ceil(words.length/2);
+      lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')];
     }
+
+    // Find font size that fits all lines
+    let fs=18;
+    ctx.font=`500 ${fs}px 'DM Mono',monospace`;
+    while(fs>11&&lines.some(l=>ctx.measureText(l).width>maxW)){
+      fs--;
+      ctx.font=`500 ${fs}px 'DM Mono',monospace`;
+    }
+
+    const lineH=fs*1.25;
+    const totalH=(lines.length-1)*lineH;
+    lines.forEach((line,li)=>{
+      ctx.fillText(line,b.x,b.y-totalH/2+li*lineH);
+    });
+
     ctx.restore();
   }
   ctx.restore();
@@ -426,27 +528,19 @@ async function runSelectionAnimation(picked){
   return new Promise(resolve=>{
     const total=balls.length;
     if(!total){resolve();return;}
-
     let hlIdx=0,cycleCount=0,maxCycles=total*4+14;
     const shuffled=[...balls].sort(()=>Math.random()-.5);
-
     const cycle=setInterval(()=>{
       balls.forEach(b=>{b.highlight=false;b.selected=false;});
       const b=shuffled[hlIdx%shuffled.length];
       if(b)b.highlight=true;
       hlIdx++;cycleCount++;
-
       if(cycleCount>=maxCycles){
         clearInterval(cycle);
         balls.forEach(b=>{b.highlight=false;});
-
         let pi=0;
         const reveal=setInterval(()=>{
-          if(pi>=picked.length){
-            clearInterval(reveal);
-            setTimeout(resolve,1000);
-            return;
-          }
+          if(pi>=picked.length){clearInterval(reveal);setTimeout(resolve,1000);return;}
           const target=balls.find(b=>b.text===picked[pi]);
           if(target)target.selected=true;
           pi++;
@@ -473,24 +567,50 @@ async function hostLobby(){
     state={phase:'waiting',waitStart:Date.now(),p1Start:null,submissions:{},movies:[],votes:{},voters:{}};
     await dbSet('/state',state);
   }
-  G=state;updateLobbyUI();
+  G=state;
+  // Init lobby with current players without any animation
+  lobbyRenderedNames=new Set();
+  updateLobbyUI(true);
+
   tick(async()=>{
-    G=await dbGet('/state')||G;updateLobbyUI();
+    G=await dbGet('/state')||G;
+    updateLobbyUI(false);
     if(G.phase==='submitting'){clearAll();hostSubmitScreen();}
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();}
     if(G.phase==='reveal'){clearAll();showReveal();}
   },2000);
 }
 
-function updateLobbyUI(){
+// Track which names are already rendered so we never re-render them
+let lobbyRenderedNames=new Set();
+
+function updateLobbyUI(initial){
   const subs=G.submissions?Object.values(G.submissions):[];
   document.getElementById('pCount').textContent=subs.length;
   const chips=document.getElementById('playerChips');
-  if(!subs.length){chips.innerHTML='<span style="font-size:16px;color:var(--ghost);font-style:italic;font-family:\'DM Mono\',monospace;">waiting for players...</span>';return;}
-  chips.innerHTML=subs.map((s,i)=>{
+
+  if(!subs.length){
+    chips.innerHTML='<span id="lobbyEmpty" style="font-size:16px;color:var(--ghost);font-style:italic;font-family:\'DM Mono\',monospace;">waiting for players...</span>';
+    lobbyRenderedNames=new Set();
+    return;
+  }
+
+  // Remove the empty placeholder if present
+  const empty=document.getElementById('lobbyEmpty');
+  if(empty)empty.remove();
+
+  // Only add chips for names not yet rendered
+  subs.forEach((s,i)=>{
+    if(lobbyRenderedNames.has(s.name))return;
+    lobbyRenderedNames.add(s.name);
     const col=CHIP_COLORS[i%CHIP_COLORS.length];
-    return `<div class="player-chip"><div class="player-chip-dot" style="background:${col}"></div>${esc(s.name)}</div>`;
-  }).join('');
+    const chip=document.createElement('div');
+    chip.className='player-chip';
+    // Skip the entrance animation on initial load (already joined)
+    if(initial)chip.style.animation='none';
+    chip.innerHTML=`<div class="player-chip-dot" style="background:${col}"></div>${esc(s.name)}`;
+    chips.appendChild(chip);
+  });
 }
 
 async function hostStartSubmissions(){
@@ -503,9 +623,12 @@ async function hostStartSubmissions(){
 }
 
 let seenMovies=new Set();
+let submitTimerIv=null;
+
 function hostSubmitScreen(){
   show('sSubmit');
   seenMovies=new Set();
+
   setTimeout(()=>{
     initFish();
     if(G.submissions)Object.values(G.submissions).forEach(s=>(s.movies||[]).forEach(m=>{
@@ -513,6 +636,19 @@ function hostSubmitScreen(){
     }));
   },380);
 
+  // Smooth 1-second timer — completely separate from the DB poll
+  if(submitTimerIv)clearInterval(submitTimerIv);
+  submitTimerIv=setInterval(()=>{
+    if(!G.p1Start)return;
+    const el=Math.min((Date.now()-G.p1Start)/1000,P1);
+    const rem=Math.max(0,P1-el);
+    const mm=Math.floor(rem/60),ss=Math.floor(rem%60);
+    const timerEl=document.getElementById('fishTimer');
+    if(timerEl)timerEl.textContent=`${mm}:${String(ss).padStart(2,'0')}`;
+  },1000);
+  ivs.push(submitTimerIv);
+
+  // DB poll at 2s — movie sync only, no timer logic here
   tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();return;}
@@ -525,12 +661,10 @@ function hostSubmitScreen(){
     });
 
     document.getElementById('fishMCount').textContent=allM.length;
-    if(G.p1Start){
-      const el=Math.min((Date.now()-G.p1Start)/1000,P1);
-      const rem=Math.max(0,P1-el);
-      const mm=Math.floor(rem/60),ss=Math.round(rem%60);
-      document.getElementById('fishTimer').textContent=`${mm}:${String(ss).padStart(2,'0')}`;
-      if(el>=P1){clearAll();await hostStartVoting();}
+
+    // Auto-advance when timer expires
+    if(G.p1Start&&(Date.now()-G.p1Start)/1000>=P1){
+      clearAll();await hostStartVoting();
     }
   },2000);
 }
@@ -559,12 +693,19 @@ async function hostStartVoting(){
 function hostVote(){
   show('sHostVote');
   renderVoteBars();
+
+  // Smooth 1-second ring timer
+  tick(()=>{
+    if(G.p2Start)updateVoteRing();
+  },1000);
+
+  // DB poll at 2s
   tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase!=='voting'){clearAll();return;}
-    renderVoteBars();updateVoteRing();
-    if((Date.now()-G.p2Start)/1000>=P2){clearAll();await hostEndVoting();}
-  },1500);
+    renderVoteBars();
+    if(G.p2Start&&(Date.now()-G.p2Start)/1000>=P2){clearAll();await hostEndVoting();}
+  },2000);
 }
 
 function renderVoteBars(){
@@ -592,11 +733,14 @@ function renderVoteBars(){
 }
 
 function updateVoteRing(){
+  if(!G.p2Start)return;
   const el=(Date.now()-G.p2Start)/1000;
   const rem=Math.max(0,P2-el);
-  const mm=Math.floor(rem/60),ss=Math.round(rem%60);
-  document.getElementById('vRingTime').textContent=`${mm}:${String(ss).padStart(2,'0')}`;
-  document.getElementById('vRingArc').style.strokeDashoffset=CIRC_V*(1-rem/P2);
+  const mm=Math.floor(rem/60),ss=Math.floor(rem%60);
+  const timeEl=document.getElementById('vRingTime');
+  const arcEl=document.getElementById('vRingArc');
+  if(timeEl)timeEl.textContent=`${mm}:${String(ss).padStart(2,'0')}`;
+  if(arcEl)arcEl.style.strokeDashoffset=CIRC_V*(1-rem/P2);
 }
 
 async function hostEndVoting(){
@@ -611,12 +755,8 @@ function showReveal(){
   const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
   const topScore=vt[sorted[0]]||0;
   const tied=sorted.filter(m=>(vt[m]||0)===topScore);
-
-  if(tied.length>1){
-    runCoinFlip(tied,sorted);
-  } else {
-    renderReveal(sorted);
-  }
+  if(tied.length>1){runCoinFlip(tied,sorted);}
+  else{renderReveal(sorted);}
 }
 
 function runCoinFlip(tied,sorted){
@@ -640,14 +780,11 @@ function runCoinFlip(tied,sorted){
 
   function drawCoin(scaleX){
     cx.clearRect(0,0,160,160);
-    cx.save();
-    cx.translate(80,80);
-    cx.scale(scaleX,1);
+    cx.save();cx.translate(80,80);cx.scale(scaleX,1);
     cx.beginPath();cx.arc(0,0,62,0,Math.PI*2);
     cx.fillStyle=side?'#0e0e12':'#d6a42a';cx.fill();
     if(Math.abs(scaleX)>0.15){
-      cx.fillStyle='#f5f2eb';
-      cx.font=`500 28px 'DM Mono',monospace`;
+      cx.fillStyle='#f5f2eb';cx.font=`500 28px 'DM Mono',monospace`;
       cx.textAlign='center';cx.textBaseline='middle';
       cx.fillText(side?'?':'!',0,1);
     }
@@ -662,15 +799,10 @@ function runCoinFlip(tied,sorted){
     const scaleX=Math.cos(angle);
     if(Math.cos(angle-speed*0.28)*scaleX<0)side=!side;
     drawCoin(scaleX);
-
     if(frame>=totalFrames){
-      clearInterval(anim);
-      drawCoin(1);
-      document.getElementById('coinStatus').innerHTML=`<span style="color:var(--mute);font-size:1rem;font-family:'DM Mono',monospace;">🪙 the coin lands...</span>`;
-      setTimeout(()=>{
-        const finalSorted=[winner,...sorted.filter(m=>m!==winner)];
-        renderReveal(finalSorted);
-      },1000);
+      clearInterval(anim);drawCoin(1);
+      document.getElementById('coinStatus').innerHTML=`<span style="color:var(--mute);font-size:1rem;font-family:'DM Mono',monospace;">the coin lands...</span>`;
+      setTimeout(()=>{const finalSorted=[winner,...sorted.filter(m=>m!==winner)];renderReveal(finalSorted);},1000);
     }
   },16);
 }
