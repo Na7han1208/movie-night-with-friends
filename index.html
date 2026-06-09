@@ -119,18 +119,30 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 .m-phase-badge{display:flex;align-items:center;gap:10px;margin-bottom:1.75rem;}
 .m-phase-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
 .m-phase-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);}
-.m-add-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:1.25rem;}
-.m-add-input{width:100%;background:var(--paper2);border:2px solid var(--line);border-radius:var(--r);padding:16px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:18px;outline:none;transition:border .2s;}
-.m-add-input:focus{border-color:var(--ink);}
-.m-add-input::placeholder{color:var(--ghost);}
-.m-add-btn{padding:16px 20px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:26px;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;line-height:1;}
-.m-add-btn:hover{opacity:.75;}
 .m-movie-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;}
 .m-movie-item{display:flex;align-items:center;gap:14px;padding:18px 20px;background:var(--ink);border-radius:var(--r);animation:chipIn .22s ease;}
 .m-movie-item span{font-family:'DM Mono',monospace;font-size:18px;color:var(--paper);flex:1;line-height:1.3;}
 .m-movie-rm{background:transparent;border:none;color:var(--ghost);font-family:'DM Mono',monospace;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s;}
 .m-movie-rm:hover{color:var(--paper);}
 .m-movie-empty{font-size:15px;color:var(--ghost);font-style:italic;padding:8px 0;margin-bottom:1.25rem;}
+
+/* SEARCH */
+.m-search-wrap{position:relative;margin-bottom:1.25rem;}
+.m-search-input{width:100%;background:var(--paper2);border:2px solid var(--line);border-radius:var(--r);padding:16px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:18px;outline:none;transition:border .2s;}
+.m-search-input:focus{border-color:var(--ink);}
+.m-search-input::placeholder{color:var(--ghost);}
+.m-search-input:disabled{opacity:.4;cursor:not-allowed;}
+.m-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--paper);border:2px solid var(--ink);border-radius:var(--r);max-height:260px;overflow-y:auto;z-index:100;display:none;}
+.m-dropdown.open{display:block;}
+.m-dropdown-item{padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:17px;cursor:pointer;border-bottom:1px solid var(--paper3);transition:background .1s;}
+.m-dropdown-item:last-child{border-bottom:none;}
+.m-dropdown-item:hover{background:var(--paper2);}
+.m-dropdown-item.taken{color:var(--ghost);cursor:not-allowed;}
+.m-dropdown-empty{padding:14px 16px;font-family:'DM Mono',monospace;font-size:14px;color:var(--ghost);font-style:italic;}
+.m-picks-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.m-picks-count{font-size:13px;letter-spacing:.08em;}
+
+/* VOTE */
 .mv-list{display:flex;flex-direction:column;gap:16px;margin-bottom:1rem;}
 .mv-card{border:2.5px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper2);}
 .mv-card-header{display:flex;align-items:center;gap:14px;padding:20px 22px;}
@@ -220,8 +232,7 @@ html,body{height:100%;width:100%;overflow:hidden;background:var(--paper);color:v
 <!-- REVEAL -->
 <div class="scr" id="sReveal">
   <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:4rem;">
-    <div class="reveal-wrap" id="revealWrap">
-    </div>
+    <div class="reveal-wrap" id="revealWrap"></div>
   </div>
 </div>
 
@@ -260,8 +271,6 @@ let G={},ivs=[];
 function clearAll(){ivs.forEach(clearInterval);ivs=[];}
 function tick(fn,ms){const id=setInterval(fn,ms);ivs.push(id);return id;}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-
-// Proper Fisher-Yates shuffle — fixes "always picks first 3 movies" bug
 function shuffle(arr){
   const a=[...arr];
   for(let i=a.length-1;i>0;i--){
@@ -269,6 +278,15 @@ function shuffle(arr){
     [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
+}
+
+/* ══ MOVIE LIST — loaded once from movies.json ══ */
+let MOVIE_LIST=[];
+async function loadMovieList(){
+  try{
+    const r=await fetch('./movies.json');
+    if(r.ok)MOVIE_LIST=await r.json();
+  }catch(e){console.warn('Could not load movies.json',e);}
 }
 
 const CHIP_COLORS=['#E8341A','#1A6DB5','#F5A800','#2E9B47','#8B1A8B'];
@@ -292,26 +310,14 @@ function show(id){
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
 const GRAV=0.38,DAMP=0.48,FRIC=0.978;
 const BALL_R_MIN=52,BALL_R_MAX=72;
-const PILL_COLORS=[
-  '#E8341A', // red line
-  '#1A6DB5', // blue line
-  '#F5A800', // yellow line
-  '#2E9B47', // green line
-  '#8B1A8B', // purple line
-  '#00839B', // teal line
-  '#E07B39', // orange line
-];
-
-// FIX 1: Bowl has a max-width so it doesn't stretch across wide screens.
-// It sits centred in the canvas; we store an x-offset for that.
+const PILL_COLORS=['#E8341A','#1A6DB5','#F5A800','#2E9B47','#8B1A8B','#00839B','#E07B39'];
 let uBowl={x:0,y:0,w:0,h:0,rx:0};
 const BOWL_MAX_W=820;
 
 function getUBowl(){
-  const pad=40;
-  const rawW=CW-pad*2;
+  const pad=40,rawW=CW-pad*2;
   const w=Math.min(rawW,BOWL_MAX_W);
-  const x=Math.round((CW-w)/2); // centred
+  const x=Math.round((CW-w)/2);
   const y=Math.round(CH*0.06);
   const h=CH-y-pad;
   const rx=Math.min(w*0.18,h*0.28);
@@ -330,70 +336,33 @@ function initFish(){
   if(raf)cancelAnimationFrame(raf);
   fishLoop();
 }
-  
+
 function resolveUBowl(b){
   const{x,y,w,h,rx}=uBowl;
-  const right=x+w;
-  const bottom=y+h;
+  const right=x+w,bottom=y+h;
+  const blcx=x+rx,blcy=bottom-rx;
+  const brcx=right-rx,brcy=bottom-rx;
+  const inLeft=b.x<blcx&&b.y>blcy;
+  const inRight=b.x>brcx&&b.y>brcy;
 
-  // Arc centres sit at the inner tangent points
-  const blcx=x+rx,    blcy=bottom-rx;  // bottom-left arc centre
-  const brcx=right-rx, brcy=bottom-rx; // bottom-right arc centre
-
-  // A ball is only in a corner zone if it's past BOTH the side wall
-  // tangent AND the floor tangent — i.e. in the actual curved region
-  const inLeft  = b.x < blcx && b.y > blcy;
-  const inRight = b.x > brcx && b.y > brcy;
-
-  if(inLeft || inRight){
-    const cx = inLeft ? blcx : brcx;
-    const cy = inLeft ? blcy : brcy;
-    const dx = b.x - cx;
-    const dy = b.y - cy;
-    const dist = Math.hypot(dx, dy);
-    // How far the ball centre can be from the arc centre
-    // rx is the inner radius of the corner; ball must fit inside it
-    const maxDist = Math.max(rx - b.r, b.r * 0.1); // guard against rx < b.r
-    if(dist > maxDist && dist > 0.001){
-      const nx = dx / dist;
-      const ny = dy / dist;
-      // Push ball back inside the curve
-      b.x = cx + nx * maxDist;
-      b.y = cy + ny * maxDist;
-      // Reflect velocity along the normal, only if moving outward
-      const dot = b.vx * nx + b.vy * ny;
-      if(dot > 0){
-        b.vx = (b.vx - 2 * dot * nx) * DAMP;
-        b.vy = (b.vy - 2 * dot * ny) * DAMP;
-        b.vx *= 0.92;
-      }
+  if(inLeft||inRight){
+    const cx=inLeft?blcx:brcx;
+    const cy=inLeft?blcy:brcy;
+    const dx=b.x-cx,dy=b.y-cy;
+    const dist=Math.hypot(dx,dy);
+    const maxDist=Math.max(rx-b.r,b.r*0.1);
+    if(dist>maxDist&&dist>0.001){
+      const nx=dx/dist,ny=dy/dist;
+      b.x=cx+nx*maxDist;b.y=cy+ny*maxDist;
+      const dot=b.vx*nx+b.vy*ny;
+      if(dot>0){b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;b.vx*=0.92;}
     }
   } else {
-    // Straight regions — only tested when NOT in a corner zone
-
-    // Left wall
-    if(b.x - b.r < x){
-      b.x = x + b.r;
-      b.vx = Math.abs(b.vx) * DAMP;
-    }
-    // Right wall
-    if(b.x + b.r > right){
-      b.x = right - b.r;
-      b.vx = -Math.abs(b.vx) * DAMP;
-    }
-    // Floor
-    if(b.y + b.r > bottom){
-      b.y = bottom - b.r;
-      b.vy = -Math.abs(b.vy) * DAMP;
-      b.vx *= 0.92;
-    }
+    if(b.x-b.r<x){b.x=x+b.r;b.vx=Math.abs(b.vx)*DAMP;}
+    if(b.x+b.r>right){b.x=right-b.r;b.vx=-Math.abs(b.vx)*DAMP;}
+    if(b.y+b.r>bottom){b.y=bottom-b.r;b.vy=-Math.abs(b.vy)*DAMP;b.vx*=0.92;}
   }
-
-  // Top rim — always enforced
-  if(b.y - b.r < y){
-    b.y = y + b.r;
-    b.vy = Math.abs(b.vy) * 0.2;
-  }
+  if(b.y-b.r<y){b.y=y+b.r;b.vy=Math.abs(b.vy)*0.2;}
 }
 
 function dropBall(text){
@@ -401,13 +370,7 @@ function dropBall(text){
   const r=BALL_R_MIN+Math.random()*(BALL_R_MAX-BALL_R_MIN);
   const col=PILL_COLORS[Math.floor(Math.random()*PILL_COLORS.length)];
   const{x,w}=uBowl;
-  balls.push({
-    x:x+w*0.2+Math.random()*w*0.6,
-    y:-r*2-10,
-    vx:(Math.random()-.5)*4,vy:0,
-    text,r,col,
-    highlight:false,selected:false
-  });
+  balls.push({x:x+w*0.2+Math.random()*w*0.6,y:-r*2-10,vx:(Math.random()-.5)*4,vy:0,text,r,col,highlight:false,selected:false});
 }
 
 function removeBall(text){
@@ -419,52 +382,35 @@ function drawUBowlOutline(){
   const{x,y,w,h,rx}=uBowl;
   const right=x+w,bottom=y+h;
   ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x, bottom-rx);
-  ctx.arcTo(x, bottom, x+rx, bottom, rx);
-  ctx.lineTo(right-rx, bottom);
-  ctx.arcTo(right, bottom, right, bottom-rx, rx);
-  ctx.lineTo(right, y);
-  ctx.strokeStyle='#0e0e12';
-  ctx.lineWidth=3;
-  ctx.stroke();
+  ctx.moveTo(x,y);ctx.lineTo(x,bottom-rx);
+  ctx.arcTo(x,bottom,x+rx,bottom,rx);
+  ctx.lineTo(right-rx,bottom);
+  ctx.arcTo(right,bottom,right,bottom-rx,rx);
+  ctx.lineTo(right,y);
+  ctx.strokeStyle='#0e0e12';ctx.lineWidth=3;ctx.stroke();
 }
 
 function fishLoop(){
   if(!ctx)return;
   ctx.clearRect(0,0,CW,CH);
   drawUBowlOutline();
-
   const{x,y,w,h,rx}=uBowl;
   const right=x+w,bottom=y+h;
   ctx.save();
   ctx.beginPath();
-  ctx.moveTo(x,y);
-  ctx.lineTo(x,bottom-rx);
+  ctx.moveTo(x,y);ctx.lineTo(x,bottom-rx);
   ctx.arcTo(x,bottom,x+rx,bottom,rx);
   ctx.lineTo(right-rx,bottom);
   ctx.arcTo(right,bottom,right,bottom-rx,rx);
-  ctx.lineTo(right,y);
-  ctx.lineTo(x,y);
+  ctx.lineTo(right,y);ctx.lineTo(x,y);
   ctx.clip();
 
   for(let i=0;i<balls.length;i++){
     const b=balls[i];
     b.vy+=GRAV;b.vx*=FRIC;b.vy*=FRIC;
     b.x+=b.vx;b.y+=b.vy;
-    // Emergency recovery for escaped balls
-    if(
-      b.x < -500 ||
-      b.x > CW + 500 ||
-      b.y > CH + 500 ||
-      b.y < -500
-    ){
-      balls.splice(i,1);
-      i--;
-      continue;
-    }
+    if(b.x<-500||b.x>CW+500||b.y>CH+500||b.y<-500){balls.splice(i,1);i--;continue;}
     resolveUBowl(b);
-
     for(let j=i+1;j<balls.length;j++){
       const o=balls[j];
       const ddx=o.x-b.x,ddy=o.y-b.y,dd=Math.hypot(ddx,ddy);
@@ -476,36 +422,19 @@ function fishLoop(){
         b.vx-=imp*nx;b.vy-=imp*ny;o.vx+=imp*nx;o.vy+=imp*ny;
       }
     }
-
     ctx.save();
     ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
-    if(b.selected){
-      ctx.fillStyle='#f5f2eb';ctx.fill();
-      ctx.strokeStyle=b.col;ctx.lineWidth=5;ctx.stroke();
-    } else if(b.highlight){
-      ctx.fillStyle=b.col;ctx.fill();
-      ctx.strokeStyle='#f5f2eb';ctx.lineWidth=4;ctx.stroke();
-    } else {
-      ctx.fillStyle=b.col;ctx.fill();
-    }
-
+    if(b.selected){ctx.fillStyle='#f5f2eb';ctx.fill();ctx.strokeStyle=b.col;ctx.lineWidth=5;ctx.stroke();}
+    else if(b.highlight){ctx.fillStyle=b.col;ctx.fill();ctx.strokeStyle='#f5f2eb';ctx.lineWidth=4;ctx.stroke();}
+    else{ctx.fillStyle=b.col;ctx.fill();}
     const maxW=(b.r*2)-22;
-    const textColor=b.selected?b.col:'#f5f2eb';
-    ctx.fillStyle=textColor;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-
+    ctx.fillStyle=b.selected?b.col:'#f5f2eb';
+    ctx.textAlign='center';ctx.textBaseline='middle';
     const words=b.text.split(' ');
-    let lines=[];
-    if(words.length===1){lines=[b.text];}
-    else{const mid=Math.ceil(words.length/2);lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')];}
-
+    let lines=words.length===1?[b.text]:[words.slice(0,Math.ceil(words.length/2)).join(' '),words.slice(Math.ceil(words.length/2)).join(' ')];
     let fs=18;
     ctx.font=`500 ${fs}px 'DM Mono',monospace`;
-    while(fs>11&&lines.some(l=>ctx.measureText(l).width>maxW)){
-      fs--;ctx.font=`500 ${fs}px 'DM Mono',monospace`;
-    }
-
+    while(fs>11&&lines.some(l=>ctx.measureText(l).width>maxW)){fs--;ctx.font=`500 ${fs}px 'DM Mono',monospace`;}
     const lineH=fs*1.25,totalH=(lines.length-1)*lineH;
     lines.forEach((line,li)=>{ctx.fillText(line,b.x,b.y-totalH/2+li*lineH);});
     ctx.restore();
@@ -514,17 +443,12 @@ function fishLoop(){
   raf=requestAnimationFrame(fishLoop);
 }
 
-/* ══ SELECTION ANIMATION ══ */
-// FIX 2: animating is a flag the DB poll checks — it won't navigate away mid-animation
+/* ══ SELECTION ══ */
 let animating=false;
-
 async function runSelectionAnimation(picked){
   animating=true;
   return new Promise(resolve=>{
-    balls.forEach(b=>{
-      b.highlight=false;
-      b.selected=picked.includes(b.text);
-    });
+    balls.forEach(b=>{b.highlight=false;b.selected=picked.includes(b.text);});
     setTimeout(()=>{animating=false;resolve();},1800);
   });
 }
@@ -540,19 +464,14 @@ async function hostLobby(){
   const sz=Math.min(Math.round(Math.min(window.innerWidth*.36,window.innerHeight*.55)),460);
   try{new QRCode(qrBox,{text:vUrl.toString(),width:sz,height:sz,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}
   catch(e){qrBox.textContent='QR error';}
-
   let state=await dbGet('/state');
   if(!state||state.phase==='reveal'){
     state={phase:'waiting',waitStart:Date.now(),p1Start:null,submissions:{},movies:[],votes:{},voters:{}};
     await dbSet('/state',state);
   }
-  G=state;
-  lobbyRenderedNames=new Set();
-  updateLobbyUI(true);
-
+  G=state;lobbyRenderedNames=new Set();updateLobbyUI(true);
   tick(async()=>{
-    G=await dbGet('/state')||G;
-    updateLobbyUI(false);
+    G=await dbGet('/state')||G;updateLobbyUI(false);
     if(G.phase==='submitting'){clearAll();hostSubmitScreen();}
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();}
     if(G.phase==='reveal'){clearAll();showReveal();}
@@ -560,21 +479,15 @@ async function hostLobby(){
 }
 
 let lobbyRenderedNames=new Set();
-
 function updateLobbyUI(initial){
   const subs=G.submissions?Object.values(G.submissions):[];
   document.getElementById('pCount').textContent=subs.length;
   const chips=document.getElementById('playerChips');
-
   if(!subs.length){
     chips.innerHTML='<span id="lobbyEmpty" style="font-size:16px;color:var(--ghost);font-style:italic;font-family:\'DM Mono\',monospace;">waiting for players...</span>';
-    lobbyRenderedNames=new Set();
-    return;
+    lobbyRenderedNames=new Set();return;
   }
-
-  const empty=document.getElementById('lobbyEmpty');
-  if(empty)empty.remove();
-
+  const empty=document.getElementById('lobbyEmpty');if(empty)empty.remove();
   subs.forEach((s,i)=>{
     if(lobbyRenderedNames.has(s.name))return;
     lobbyRenderedNames.add(s.name);
@@ -588,28 +501,21 @@ function updateLobbyUI(initial){
 }
 
 async function hostStartSubmissions(){
-  clearAll();
-  G=await dbGet('/state')||G;
+  clearAll();G=await dbGet('/state')||G;
   if(G.phase!=='waiting')return;
   const ns={...G,phase:'submitting',p1Start:Date.now()};
-  await dbSet('/state',ns);G=ns;
-  hostSubmitScreen();
+  await dbSet('/state',ns);G=ns;hostSubmitScreen();
 }
 
-let seenMovies=new Set();
-let submitTimerIv=null;
-
+let seenMovies=new Set(),submitTimerIv=null;
 function hostSubmitScreen(){
-  show('sSubmit');
-  seenMovies=new Set();
-
+  show('sSubmit');seenMovies=new Set();
   setTimeout(()=>{
     initFish();
     if(G.submissions)Object.values(G.submissions).forEach(s=>(s.movies||[]).forEach(m=>{
       if(!seenMovies.has(m)){seenMovies.add(m);setTimeout(()=>dropBall(m),100+Math.random()*400);}
     }));
   },380);
-
   if(submitTimerIv)clearInterval(submitTimerIv);
   submitTimerIv=setInterval(()=>{
     if(!G.p1Start)return;
@@ -620,48 +526,30 @@ function hostSubmitScreen(){
     if(timerEl)timerEl.textContent=`${mm}:${String(ss).padStart(2,'0')}`;
   },1000);
   ivs.push(submitTimerIv);
-
   tick(async()=>{
     G=await dbGet('/state')||G;
-    // FIX 2: Don't navigate away if the selection animation is running
-    if(G.phase==='voting'){
-      if(!animating){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();}
-      return;
-    }
+    if(G.phase==='voting'){if(!animating){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();}return;}
     const subs=G.submissions?Object.values(G.submissions):[];
     const allM=[];subs.forEach(s=>(s.movies||[]).forEach(m=>allM.push(m)));
-
     allM.forEach(m=>{if(!seenMovies.has(m)){seenMovies.add(m);dropBall(m);}});
-    seenMovies.forEach(m=>{
-      if(!allM.includes(m)){seenMovies.delete(m);removeBall(m);}
-    });
-
+    seenMovies.forEach(m=>{if(!allM.includes(m)){seenMovies.delete(m);removeBall(m);}});
     document.getElementById('fishMCount').textContent=allM.length;
-
-    if(G.p1Start&&(Date.now()-G.p1Start)/1000>=P1){
-      clearAll();await hostStartVoting();
-    }
+    if(G.p1Start&&(Date.now()-G.p1Start)/1000>=P1){clearAll();await hostStartVoting();}
   },2000);
 }
 
 async function hostStartVoting(){
-  clearAll();
-  G=await dbGet('/state')||G;
+  clearAll();G=await dbGet('/state')||G;
   if(G.phase!=='submitting')return;
-
   let all=[];
   const subs=G.submissions?Object.values(G.submissions):[];
   subs.forEach(s=>(s.movies||[]).forEach(m=>all.push(m)));
-  const defaults=['The Dark Knight','Inception','Parasite','Pulp Fiction','Interstellar','Get Out','The Matrix','Goodfellas','Whiplash','La La Land'];
+  const defaults=['The Dark Knight','Inception','Parasite','Pulp Fiction','Interstellar'];
   while(all.length<3)all.push(defaults[Math.floor(Math.random()*defaults.length)]);
-
-  // FIX 3: Use proper Fisher-Yates shuffle instead of .sort(() => Math.random() - 0.5)
   const picked=shuffle(all).slice(0,3);
-
   const votes={};picked.forEach(m=>{votes[m]=0;});
   const ns={...G,phase:'voting',p2Start:Date.now(),movies:picked,votes,voters:{}};
   await dbSet('/state',ns);G=ns;
-
   await runSelectionAnimation(picked);
   if(raf)cancelAnimationFrame(raf);
   hostVote();
@@ -669,13 +557,8 @@ async function hostStartVoting(){
 
 /* ══ HOST VOTE ══ */
 function hostVote(){
-  show('sHostVote');
-  renderVoteBars();
-
-  tick(()=>{
-    if(G.p2Start)updateVoteRing();
-  },1000);
-
+  show('sHostVote');renderVoteBars();
+  tick(()=>{if(G.p2Start)updateVoteRing();},1000);
   tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase!=='voting'){clearAll();return;}
@@ -692,17 +575,12 @@ function renderVoteBars(){
   const minS=Math.min(...scores),maxS=Math.max(...scores);
   const range=maxS-minS||1;
   const winner=scores.indexOf(Math.max(...scores));
-
   document.getElementById('vBarsArea').innerHTML=mv.map((m,i)=>{
     const pct=Math.round(((scores[i]-minS)/range)*80+10);
     const isLead=i===winner&&vc>0;
     return `<div class="vote-bar-row${isLead?' leading':''}">
       <div class="vote-bar-movie">${esc(m)}</div>
-      <div class="vote-bar-track-wrap">
-        <div class="vote-bar-track">
-          <div class="vote-bar-fill" style="width:${pct}%;background:${BAR_COLORS[i]};"></div>
-        </div>
-      </div>
+      <div class="vote-bar-track-wrap"><div class="vote-bar-track"><div class="vote-bar-fill" style="width:${pct}%;background:${BAR_COLORS[i]};"></div></div></div>
       <div class="vote-bar-dot" style="background:${isLead?BAR_COLORS[i]:'var(--paper2)'};border-color:${isLead?BAR_COLORS[i]:'var(--ink)'};"></div>
     </div>`;
   }).join('');
@@ -710,19 +588,16 @@ function renderVoteBars(){
 
 function updateVoteRing(){
   if(!G.p2Start)return;
-  const el=(Date.now()-G.p2Start)/1000;
-  const rem=Math.max(0,P2-el);
+  const el=(Date.now()-G.p2Start)/1000,rem=Math.max(0,P2-el);
   const mm=Math.floor(rem/60),ss=Math.floor(rem%60);
-  const timeEl=document.getElementById('vRingTime');
-  const arcEl=document.getElementById('vRingArc');
+  const timeEl=document.getElementById('vRingTime'),arcEl=document.getElementById('vRingArc');
   if(timeEl)timeEl.textContent=`${mm}:${String(ss).padStart(2,'0')}`;
   if(arcEl)arcEl.style.strokeDashoffset=CIRC_V*(1-rem/P2);
 }
 
 async function hostEndVoting(){
   G=await dbGet('/state')||G;
-  await dbPatch('/state',{phase:'reveal'});G.phase='reveal';
-  showReveal();
+  await dbPatch('/state',{phase:'reveal'});G.phase='reveal';showReveal();
 }
 
 /* ══ REVEAL ══ */
@@ -731,8 +606,7 @@ function showReveal(){
   const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
   const topScore=vt[sorted[0]]||0;
   const tied=sorted.filter(m=>(vt[m]||0)===topScore);
-  if(tied.length>1){runCoinFlip(tied,sorted);}
-  else{renderReveal(sorted);}
+  if(tied.length>1){runCoinFlip(tied,sorted);}else{renderReveal(sorted);}
 }
 
 function runCoinFlip(tied,sorted){
@@ -747,45 +621,33 @@ function runCoinFlip(tied,sorted){
     <div id="coinStatus" style="font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:300;text-align:center;letter-spacing:-.01em;color:var(--mute);">
       deciding between ${tied.map(m=>`<strong style="color:var(--ink)">${esc(m)}</strong>`).join(' vs ')}...
     </div>`;
-
-  const c=document.getElementById('coinCanvas');
-  const cx=c.getContext('2d');
-  let frame=0,totalFrames=90;
+  const c=document.getElementById('coinCanvas'),cx=c.getContext('2d');
+  let frame=0,totalFrames=90,side=true;
   const winner=tied[Math.floor(Math.random()*tied.length)];
-  let side=true;
-
   function drawCoin(scaleX){
-    cx.clearRect(0,0,160,160);
-    cx.save();cx.translate(80,80);cx.scale(scaleX,1);
+    cx.clearRect(0,0,160,160);cx.save();cx.translate(80,80);cx.scale(scaleX,1);
     cx.beginPath();cx.arc(0,0,62,0,Math.PI*2);
     cx.fillStyle=side?'#0e0e12':'#d6a42a';cx.fill();
-    if(Math.abs(scaleX)>0.15){
-      cx.fillStyle='#f5f2eb';cx.font=`500 28px 'DM Mono',monospace`;
-      cx.textAlign='center';cx.textBaseline='middle';
-      cx.fillText(side?'?':'!',0,1);
-    }
+    if(Math.abs(scaleX)>0.15){cx.fillStyle='#f5f2eb';cx.font=`500 28px 'DM Mono',monospace`;cx.textAlign='center';cx.textBaseline='middle';cx.fillText(side?'?':'!',0,1);}
     cx.restore();
   }
-
   const anim=setInterval(()=>{
     frame++;
-    const progress=frame/totalFrames;
-    const speed=progress<0.65?1:1-((progress-0.65)/0.35)*0.88;
-    const angle=frame*speed*0.28;
-    const scaleX=Math.cos(angle);
+    const progress=frame/totalFrames,speed=progress<0.65?1:1-((progress-0.65)/0.35)*0.88;
+    const angle=frame*speed*0.28,scaleX=Math.cos(angle);
     if(Math.cos(angle-speed*0.28)*scaleX<0)side=!side;
     drawCoin(scaleX);
     if(frame>=totalFrames){
       clearInterval(anim);drawCoin(1);
       document.getElementById('coinStatus').innerHTML=`<span style="color:var(--mute);font-size:1rem;font-family:'DM Mono',monospace;">the coin lands...</span>`;
-      setTimeout(()=>{const finalSorted=[winner,...sorted.filter(m=>m!==winner)];renderReveal(finalSorted);},1000);
+      setTimeout(()=>{renderReveal([winner,...sorted.filter(m=>m!==winner)]);},1000);
     }
   },16);
 }
 
 function renderReveal(sorted){
   show('sReveal');
-  const mv=G.movies||[],vt=G.votes||{};
+  const mv=G.movies||[];
   const wrap=document.getElementById('revealWrap');
   const rc=['r1','r2','r3'],rl=['01','02','03'];
   wrap.innerHTML=`
@@ -853,44 +715,145 @@ function mWait(){
   pollUntil(['submitting','voting','reveal']);
 }
 
+/* ══ MOBILE SUBMIT — search dropdown ══ */
+
+// Returns all movies already claimed by any player across the whole room
+function getTakenMovies(){
+  if(!G.submissions)return new Set();
+  const taken=new Set();
+  Object.values(G.submissions).forEach(s=>{
+    const key=myName.replace(/[.#$/\[\]]/g,'_');
+    // Only count movies taken by OTHER players, not this player's own list
+    // (we handle own-list duplication separately)
+    const subKey=Object.keys(G.submissions).find(k=>G.submissions[k].name===s.name);
+    const myKey=myName.replace(/[.#$/\[\]]/g,'_');
+    if(subKey!==myKey)(s.movies||[]).forEach(m=>taken.add(m));
+  });
+  return taken;
+}
+
 function mSubmitScreen(){
   if(mPoll)clearInterval(mPoll);
   document.getElementById('mContent').innerHTML=`
     <div class="m-phase-badge"><div class="m-phase-dot" style="background:var(--blue)"></div><span class="m-phase-label">add your picks</span></div>
     <p style="font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--mute);margin-bottom:1.5rem;">as ${esc(myName)}</p>
-    <div class="m-movie-list" id="mMovieList"></div>
-    <div class="m-add-row">
-      <input class="m-add-input" id="mMovieInput" placeholder="Type a movie..." maxlength="80" autocomplete="off"/>
-      <button class="m-add-btn" onclick="mAddMovie()">+</button>
+    <div class="m-picks-label">
+      <span>your picks</span>
+      <span class="m-picks-count" id="mPicksCount">${myMovies.length}/3</span>
     </div>
-    <p style="font-size:12px;color:var(--ghost);text-align:center;font-family:'DM Mono',monospace;">add as many as you like</p>`;
-  document.getElementById('mMovieInput').addEventListener('keydown',e=>{if(e.key==='Enter')mAddMovie();});
+    <div class="m-movie-list" id="mMovieList"></div>
+    <div class="m-search-wrap" id="mSearchWrap">
+      <input class="m-search-input" id="mSearchInput" placeholder="Search for a movie..." autocomplete="off" ${myMovies.length>=3?'disabled':''}/>
+      <div class="m-dropdown" id="mDropdown"></div>
+    </div>
+    <p style="font-size:12px;color:var(--ghost);text-align:center;font-family:'DM Mono',monospace;margin-top:.5rem;">pick up to 3 movies</p>`;
+
   renderMMovieList();
+  setupSearch();
   pollUntil(['voting','reveal']);
+}
+
+function setupSearch(){
+  const inp=document.getElementById('mSearchInput');
+  const dd=document.getElementById('mDropdown');
+  if(!inp||!dd)return;
+
+  inp.addEventListener('input',()=>{
+    const q=inp.value.trim().toLowerCase();
+    renderDropdown(q);
+  });
+
+  inp.addEventListener('focus',()=>{
+    const q=inp.value.trim().toLowerCase();
+    renderDropdown(q);
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click',function handler(e){
+    if(!document.getElementById('mSearchWrap')?.contains(e.target)){
+      dd.classList.remove('open');
+      document.removeEventListener('click',handler);
+    }
+  });
+}
+
+function renderDropdown(q){
+  const dd=document.getElementById('mDropdown');
+  if(!dd)return;
+  if(myMovies.length>=3){dd.classList.remove('open');return;}
+
+  const taken=getTakenMovies();
+
+  // Filter: matches query, not already in MY list, not taken by others
+  const filtered=MOVIE_LIST.filter(m=>{
+    if(myMovies.includes(m))return false; // already in my list
+    const matchesQuery=!q||m.toLowerCase().includes(q);
+    return matchesQuery;
+  }).slice(0,30); // cap at 30 results
+
+  if(!filtered.length&&!q){dd.classList.remove('open');return;}
+
+  if(!filtered.length){
+    dd.innerHTML=`<div class="m-dropdown-empty">No movies found</div>`;
+  } else {
+    dd.innerHTML=filtered.map(m=>{
+      const isTaken=taken.has(m);
+      return `<div class="m-dropdown-item${isTaken?' taken':''}" data-movie="${esc(m)}" onclick="${isTaken?'':'mPickMovie(this)'}">
+        ${esc(m)}${isTaken?' <span style="font-size:12px;font-family:\'DM Mono\',monospace;">(taken)</span>':''}
+      </div>`;
+    }).join('');
+  }
+  dd.classList.add('open');
+}
+
+async function mPickMovie(el){
+  const movie=el.getAttribute('data-movie');
+  if(!movie||myMovies.includes(movie)||myMovies.length>=3)return;
+
+  myMovies.push(movie);
+
+  const inp=document.getElementById('mSearchInput');
+  const dd=document.getElementById('mDropdown');
+  if(inp)inp.value='';
+  if(dd)dd.classList.remove('open');
+
+  renderMMovieList();
+  updatePicksCount();
+
+  // Disable input if at limit
+  if(inp&&myMovies.length>=3)inp.disabled=true;
+
+  const key=myName.replace(/[.#$/\[\]]/g,'_');
+  await dbSet(`/state/submissions/${key}`,{name:myName,movies:[...myMovies]});
+}
+
+function updatePicksCount(){
+  const el=document.getElementById('mPicksCount');
+  if(el)el.textContent=`${myMovies.length}/3`;
 }
 
 function renderMMovieList(){
   const el=document.getElementById('mMovieList');if(!el)return;
-  if(!myMovies.length){el.innerHTML='<p class="m-movie-empty">No picks yet</p>';return;}
+  if(!myMovies.length){el.innerHTML='<p class="m-movie-empty">No picks yet — search above</p>';return;}
   el.innerHTML=myMovies.map((m,i)=>`
-    <div class="m-movie-item"><span>${esc(m)}</span><button class="m-movie-rm" onclick="mRemove(${i})">x</button></div>`).join('');
-}
-
-async function mAddMovie(){
-  const inp=document.getElementById('mMovieInput');if(!inp)return;
-  const val=(inp.value||'').trim();if(!val)return;
-  myMovies.push(val);inp.value='';inp.focus();
-  renderMMovieList();
-  const key=myName.replace(/[.#$/\[\]]/g,'_');
-  await dbSet(`/state/submissions/${key}`,{name:myName,movies:[...myMovies]});
+    <div class="m-movie-item">
+      <span>${esc(m)}</span>
+      <button class="m-movie-rm" onclick="mRemove(${i})" aria-label="Remove">×</button>
+    </div>`).join('');
 }
 
 async function mRemove(idx){
-  myMovies.splice(idx,1);renderMMovieList();
+  myMovies.splice(idx,1);
+  renderMMovieList();
+  updatePicksCount();
+  // Re-enable input if under limit
+  const inp=document.getElementById('mSearchInput');
+  if(inp)inp.disabled=false;
   const key=myName.replace(/[.#$/\[\]]/g,'_');
   await dbSet(`/state/submissions/${key}`,{name:myName,movies:[...myMovies]});
 }
 
+/* ══ MOBILE VOTE ══ */
 function mVoteScreen(){
   if(mPoll)clearInterval(mPoll);
   const mv=G.movies||[];myVotes={};lastSent={};
@@ -917,8 +880,7 @@ function mVoteScreen(){
 async function mToggle(idx,dir){
   const m=G.movies[idx];
   myVotes[m]===dir?delete myVotes[m]:(myVotes[m]=dir);
-  mUpdateVoteUI();
-  await mPushVote(G.movies);
+  mUpdateVoteUI();await mPushVote(G.movies);
 }
 
 function mUpdateVoteUI(){
@@ -967,6 +929,7 @@ function pollUntil(phases){
 }
 
 (async function boot(){
+  await loadMovieList();
   if(IS_MOBILE){await mobileInit();}
   else{
     const st=await dbGet('/state');G=st||{};
