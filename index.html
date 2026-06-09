@@ -352,69 +352,63 @@ function resolveUBowl(b){
   const right=x+w;
   const bottom=y+h;
 
-  // Corner arc centres
-  const blcx=x+rx,    blcy=bottom-rx;  // bottom-left
-  const brcx=right-rx, brcy=bottom-rx; // bottom-right
+  // Arc centres sit at the inner tangent points
+  const blcx=x+rx,    blcy=bottom-rx;  // bottom-left arc centre
+  const brcx=right-rx, brcy=bottom-rx; // bottom-right arc centre
 
-  const inLeftCornerZone  = b.x < blcx && b.y > blcy;
-  const inRightCornerZone = b.x > brcx && b.y > brcy;
+  // A ball is only in a corner zone if it's past BOTH the side wall
+  // tangent AND the floor tangent — i.e. in the actual curved region
+  const inLeft  = b.x < blcx && b.y > blcy;
+  const inRight = b.x > brcx && b.y > brcy;
 
-  if(inLeftCornerZone){
-    // Concave corner: ball must stay inside the arc (dist from centre <= rx - b.r)
-    const dx=b.x-blcx, dy=b.y-blcy;
-    const dist=Math.hypot(dx,dy);
-    const maxDist=rx-b.r;
-    if(dist>maxDist&&dist>0.01){
-      const nx=dx/dist, ny=dy/dist;
-      b.x=blcx+nx*maxDist;
-      b.y=blcy+ny*maxDist;
-      const dot=b.vx*nx+b.vy*ny;
-      if(dot>0){
-        b.vx=(b.vx-2*dot*nx)*DAMP;
-        b.vy=(b.vy-2*dot*ny)*DAMP;
-        b.vx*=0.92;
-      }
-    }
-  } else if(inRightCornerZone){
-    const dx=b.x-brcx, dy=b.y-brcy;
-    const dist=Math.hypot(dx,dy);
-    const maxDist=rx-b.r;
-    if(dist>maxDist&&dist>0.01){
-      const nx=dx/dist, ny=dy/dist;
-      b.x=brcx+nx*maxDist;
-      b.y=brcy+ny*maxDist;
-      const dot=b.vx*nx+b.vy*ny;
-      if(dot>0){
-        b.vx=(b.vx-2*dot*nx)*DAMP;
-        b.vy=(b.vy-2*dot*ny)*DAMP;
-        b.vx*=0.92;
+  if(inLeft || inRight){
+    const cx = inLeft ? blcx : brcx;
+    const cy = inLeft ? blcy : brcy;
+    const dx = b.x - cx;
+    const dy = b.y - cy;
+    const dist = Math.hypot(dx, dy);
+    // How far the ball centre can be from the arc centre
+    // rx is the inner radius of the corner; ball must fit inside it
+    const maxDist = Math.max(rx - b.r, b.r * 0.1); // guard against rx < b.r
+    if(dist > maxDist && dist > 0.001){
+      const nx = dx / dist;
+      const ny = dy / dist;
+      // Push ball back inside the curve
+      b.x = cx + nx * maxDist;
+      b.y = cy + ny * maxDist;
+      // Reflect velocity along the normal, only if moving outward
+      const dot = b.vx * nx + b.vy * ny;
+      if(dot > 0){
+        b.vx = (b.vx - 2 * dot * nx) * DAMP;
+        b.vy = (b.vy - 2 * dot * ny) * DAMP;
+        b.vx *= 0.92;
       }
     }
   } else {
-    // Straight sections only apply outside the corner zones
+    // Straight regions — only tested when NOT in a corner zone
 
-    // LEFT WALL
-    if(b.x-b.r < x){
-      b.x=x+b.r;
-      b.vx=Math.abs(b.vx)*DAMP;
+    // Left wall
+    if(b.x - b.r < x){
+      b.x = x + b.r;
+      b.vx = Math.abs(b.vx) * DAMP;
     }
-    // RIGHT WALL
-    if(b.x+b.r > right){
-      b.x=right-b.r;
-      b.vx=-Math.abs(b.vx)*DAMP;
+    // Right wall
+    if(b.x + b.r > right){
+      b.x = right - b.r;
+      b.vx = -Math.abs(b.vx) * DAMP;
     }
-    // FLAT FLOOR
-    if(b.y+b.r > bottom){
-      b.y=bottom-b.r;
-      b.vy=-Math.abs(b.vy)*DAMP;
-      b.vx*=0.92;
+    // Floor
+    if(b.y + b.r > bottom){
+      b.y = bottom - b.r;
+      b.vy = -Math.abs(b.vy) * DAMP;
+      b.vx *= 0.92;
     }
   }
 
-  // TOP RIM — always enforced regardless of zone
-  if(b.y-b.r < y){
-    b.y=y+b.r;
-    b.vy=Math.abs(b.vy)*0.2;
+  // Top rim — always enforced
+  if(b.y - b.r < y){
+    b.y = y + b.r;
+    b.vy = Math.abs(b.vy) * 0.2;
   }
 }
 
