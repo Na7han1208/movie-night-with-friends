@@ -17,64 +17,43 @@
   --line:#c8c2b4;
   --mute:#9a9488;
   --ghost:#b8b2a6;
-
   --red:#d63e2a;
   --blue:#2a6dd6;
   --grn:#2ab85a;
   --ylw:#d6a42a;
-  --pur:#7a2ad6;
-
-  --dot:8px;
   --r:2px;
 }
 html,body{height:100%;background:var(--paper);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;}
 body{min-height:100vh;overflow-x:hidden;}
 
-/* ─ screens ─ */
 .scr{display:none;min-height:100vh;flex-direction:column;}
 .scr.on{display:flex;}
 
-/* ─ map bg ─ */
 .map-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
 .map-bg svg{width:100%;height:100%;opacity:.12;}
-
-/* ─ content above map ─ */
 .above{position:relative;z-index:1;}
 
-/* ─ metro line decorations ─ */
 .metro-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:2.5px solid var(--ink);background:var(--paper);flex-shrink:0;}
 .metro-dot.filled{background:var(--ink);}
-.line-h{height:3px;background:var(--ink);flex:1;}
-.line-v{width:3px;background:var(--ink);}
 
-/* ─ typography ─ */
 .mono{font-family:'DM Mono',monospace;}
 .label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);}
 .big-num{font-family:'DM Mono',monospace;font-size:3rem;font-weight:300;line-height:1;letter-spacing:-.03em;}
 
-/* ─ buttons ─ */
 .btn{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:.04em;cursor:pointer;transition:opacity .15s,transform .1s;width:100%;}
 .btn:hover{opacity:.82;}
 .btn:active{transform:scale(.97);}
 .btn:disabled{opacity:.25;cursor:not-allowed;}
 .btn-ghost{display:inline-flex;align-items:center;justify-content:center;background:transparent;color:var(--mute);border:1.5px solid var(--line);border-radius:var(--r);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;width:100%;}
 .btn-ghost:hover{border-color:var(--ink);color:var(--ink);}
-.btn-col{display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:var(--r);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s,transform .1s;width:100%;}
-.btn-col:hover{opacity:.82;}
-.btn-col:active{transform:scale(.97);}
 
-/* ─ panel ─ */
 .panel{background:var(--paper);border:1.5px solid var(--ink);border-radius:var(--r);}
 .panel-pad{padding:1.5rem;}
-
-/* ─ divider ─ */
 .div-line{height:1.5px;background:var(--ink);margin:1.25rem 0;}
 
-/* ═══════════════════════
-   LOBBY (HOST)
-═══════════════════════ */
+/* ═══ LOBBY ═══ */
 #sLobby{background:var(--paper);}
-.lobby-wrap{width:100%;max-width:680px;margin:0 auto;padding:2rem 1.5rem;display:flex;flex-direction:column;gap:1.25rem;}
+.lobby-wrap{width:100%;max-width:720px;margin:0 auto;padding:2rem 1.5rem;display:flex;flex-direction:column;gap:1.25rem;}
 
 .brand-row{display:flex;align-items:center;gap:12px;}
 .brand-stripe{width:3px;height:28px;background:var(--red);}
@@ -82,36 +61,35 @@ body{min-height:100vh;overflow-x:hidden;}
 .brand-title{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;letter-spacing:.04em;}
 .brand-phase{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);background:var(--paper2);border:1.5px solid var(--line);padding:4px 10px;border-radius:var(--r);}
 
-.qr-card{display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:center;}
-.qr-frame{background:#fff;padding:6px;border-radius:var(--r);width:108px;height:108px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid var(--ink);}
+.qr-card{display:flex;flex-direction:column;align-items:center;gap:1.25rem;padding:1.75rem;}
+.qr-frame{background:#fff;padding:8px;border-radius:var(--r);width:220px;height:220px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid var(--ink);}
+.qr-right{text-align:center;}
 .qr-right h3{font-size:15px;font-weight:500;margin-bottom:5px;}
-.qr-right p{font-size:12px;color:var(--mute);line-height:1.6;margin-bottom:.6rem;}
-.qr-url{font-family:'DM Mono',monospace;font-size:10px;color:var(--mute);word-break:break-all;background:var(--paper2);padding:7px 10px;border-radius:var(--r);border:1px solid var(--line);}
+.qr-right p{font-size:12px;color:var(--mute);line-height:1.6;}
 
-/* timer */
-.timer-card{}
 .timer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;}
 .timer-track{height:4px;background:var(--paper3);border-radius:2px;overflow:hidden;}
 .timer-fill{height:100%;background:var(--ink);border-radius:2px;transition:width .9s linear;}
 .timer-time{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:300;letter-spacing:-.02em;}
 
-/* stats */
 .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
 .stat-cell{display:flex;flex-direction:column;gap:4px;}
 
-/* feed */
+/* Host live submissions feed — big movie tiles */
 .feed-head{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;}
-.feed-items{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;}
-.feed-row{display:flex;align-items:baseline;gap:10px;padding:8px 10px;background:var(--paper2);border-radius:var(--r);}
-.feed-name{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--ink);min-width:80px;flex-shrink:0;}
-.feed-movies{font-size:12px;color:var(--mute);}
+.feed-items{display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto;}
 .feed-empty{font-size:12px;color:var(--ghost);font-style:italic;padding:8px 0;}
+
+.sub-player{margin-bottom:10px;}
+.sub-player:last-child{margin-bottom:0;}
+.sub-player-name{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:5px;}
+.sub-movies{display:flex;flex-wrap:wrap;gap:6px;}
+.sub-movie-tag{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;background:var(--ink);color:var(--paper);padding:5px 11px;border-radius:var(--r);animation:tagIn .25s ease;}
+@keyframes tagIn{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
 
 .act-row{display:grid;grid-template-columns:1fr auto;gap:.6rem;}
 
-/* ═══════════════════════
-   HOST VOTE
-═══════════════════════ */
+/* ═══ HOST VOTE ═══ */
 #sHostVote{flex-direction:row;background:var(--paper);}
 .hv-rail{width:260px;min-width:220px;border-right:1.5px solid var(--ink);display:flex;flex-direction:column;padding:1.5rem;gap:1.5rem;}
 .hv-brand{display:flex;align-items:center;gap:8px;}
@@ -119,32 +97,25 @@ body{min-height:100vh;overflow-x:hidden;}
 .hv-brand h2{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:500;letter-spacing:.04em;}
 .hv-main{flex:1;display:flex;flex-direction:column;padding:2rem 2.5rem;overflow:hidden;}
 
-/* ring */
 .ring-wrap{position:relative;width:80px;height:80px;}
 .ring-wrap svg{transform:rotate(-90deg);}
 .ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:400;letter-spacing:-.02em;}
 
-/* bars */
 .bars-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2.5rem;}
-.bar-row{}
 .bar-meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
 .bar-title{font-size:1rem;font-weight:500;}
 .bar-score{font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:300;letter-spacing:-.03em;}
 .bar-track{height:6px;background:var(--paper3);border-radius:3px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.34,1.56,.64,1);min-width:6px;}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.34,1.56,.64,1);min-width:6px;}
 
 .vote-stat{background:var(--paper2);border:1.5px solid var(--line);border-radius:var(--r);padding:1rem;}
 .vote-stat .label{margin-bottom:4px;}
 
-/* ═══════════════════════
-   REVEAL
-═══════════════════════ */
+/* ═══ REVEAL ═══ */
 #sReveal{align-items:center;justify-content:center;background:var(--paper);padding:2rem 1rem;}
 .reveal-wrap{width:100%;max-width:480px;}
 .rev-top{text-align:center;margin-bottom:2rem;}
-.rev-icon{font-size:3rem;margin-bottom:.5rem;display:block;}
 .rev-winner{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:300;letter-spacing:-.02em;line-height:1.25;margin-bottom:1rem;}
-.rev-sub{font-size:12px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;}
 .rev-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;}
 .rev-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);}
 .rev-row.rank1{background:var(--ink);color:var(--paper);}
@@ -155,11 +126,9 @@ body{min-height:100vh;overflow-x:hidden;}
 .rev-name{flex:1;font-size:14px;font-weight:500;}
 .rev-sc{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:300;}
 
-/* ═══════════════════════
-   MOBILE
-═══════════════════════ */
-#sMobile{align-items:center;justify-content:center;background:var(--paper);padding:1.5rem 1rem;}
-.m-wrap{width:100%;max-width:380px;}
+/* ═══ MOBILE ═══ */
+#sMobile{align-items:center;justify-content:flex-start;background:var(--paper);padding:1.5rem 1rem;min-height:100vh;}
+.m-wrap{width:100%;max-width:380px;margin:0 auto;}
 .m-card{background:var(--paper);border:1.5px solid var(--ink);border-radius:var(--r);padding:1.75rem;}
 
 .m-brand{display:flex;align-items:center;gap:8px;margin-bottom:1.75rem;}
@@ -171,52 +140,60 @@ body{min-height:100vh;overflow-x:hidden;}
 .m-input:focus{border-color:var(--ink);}
 .m-input::placeholder{color:var(--ghost);}
 .m-hint{font-size:12px;color:var(--mute);margin-bottom:.75rem;line-height:1.5;}
-.m-btn{width:100%;padding:13px;background:var(--ink);color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s,transform .1s;margin-top:.4rem;letter-spacing:.03em;}
+.m-btn{width:100%;padding:13px;background:var(--ink);color:var(--paper);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s,transform .1s;letter-spacing:.03em;}
 .m-btn:hover{opacity:.82;}
 .m-btn:active{transform:scale(.98);}
 .m-btn:disabled{opacity:.25;cursor:not-allowed;}
 
-/* wait / done screens */
 .m-state{text-align:center;padding:1.5rem 0;}
-.m-state-icon{font-size:2rem;margin-bottom:.75rem;display:block;}
 .m-state h3{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:400;letter-spacing:.02em;margin-bottom:.4rem;}
 .m-state p{font-size:12px;color:var(--mute);line-height:1.6;}
 
-/* vote cards */
-.vote-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;}
-.v-card{border:1.5px solid var(--line);border-radius:var(--r);padding:12px;transition:all .2s;background:var(--paper2);}
-.v-card.up{border-color:var(--grn);background:#e6f9ed;}
-.v-card.dn{border-color:var(--red);background:#fce8e5;}
-.v-card-title{font-size:13px;font-weight:500;margin-bottom:9px;}
-.v-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.v-btn{padding:9px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--paper);color:var(--mute);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;letter-spacing:.02em;}
+/* submit flow */
+.m-add-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:1rem;}
+.m-add-input{width:100%;background:var(--paper2);border:1.5px solid var(--line);border-radius:var(--r);padding:11px 13px;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .2s;}
+.m-add-input:focus{border-color:var(--ink);}
+.m-add-input::placeholder{color:var(--ghost);}
+.m-add-btn{padding:11px 16px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:18px;font-weight:300;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;white-space:nowrap;line-height:1;}
+.m-add-btn:hover{opacity:.75;}
+.m-add-btn:active{transform:scale(.96);}
+
+/* big movie list on mobile submit screen */
+.m-movie-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem;}
+.m-movie-item{display:flex;align-items:center;gap:10px;padding:14px 14px;background:var(--ink);border-radius:var(--r);animation:tagIn .22s ease;}
+.m-movie-item span{font-family:'DM Mono',monospace;font-size:14px;font-weight:400;color:var(--paper);flex:1;line-height:1.3;}
+.m-movie-remove{background:transparent;border:none;color:var(--ghost);font-family:'DM Mono',monospace;font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color .15s;flex-shrink:0;}
+.m-movie-remove:hover{color:var(--paper);}
+.m-movie-empty{font-size:12px;color:var(--ghost);font-style:italic;padding:6px 0;margin-bottom:1rem;}
+
+/* vote cards — no cast button, instant */
+.vote-list{display:flex;flex-direction:column;gap:10px;margin-bottom:.75rem;}
+.v-card{border:1.5px solid var(--line);border-radius:var(--r);padding:14px;transition:border-color .2s,background .2s;background:var(--paper2);}
+.v-card.up{border-color:var(--grn);background:#e8f9ee;}
+.v-card.dn{border-color:var(--red);background:#fce9e6;}
+.v-card-title{font-size:15px;font-weight:500;margin-bottom:10px;line-height:1.3;}
+.v-btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.v-btn{padding:10px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--paper);color:var(--mute);font-family:'DM Mono',monospace;font-size:12px;font-weight:400;cursor:pointer;transition:all .15s;letter-spacing:.04em;}
 .v-btn:hover{border-color:var(--ink);color:var(--ink);}
 .v-btn.ua{background:var(--grn);border-color:var(--grn);color:#fff;}
 .v-btn.da{background:var(--red);border-color:var(--red);color:#fff;}
-.vote-note{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--mute);text-align:center;margin-bottom:.6rem;transition:color .2s;}
-.vote-note.ready{color:var(--grn);}
+.vote-status{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--mute);text-align:center;padding:.5rem 0;min-height:1.6em;transition:color .2s;}
+.vote-status.ok{color:var(--grn);}
 
-/* lobby join (mobile phase 0) */
 .m-metro-badge{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;}
-.m-metro-badge .dot{width:10px;height:10px;border-radius:50%;background:var(--red);}
+.m-metro-badge .dot{width:10px;height:10px;border-radius:50%;}
 .m-metro-badge span{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);}
 
-/* player chips */
-.player-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:.5rem;}
 .chip{background:var(--ink);color:var(--paper);border-radius:var(--r);padding:4px 9px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;}
 
-/* metro connection line for lobby */
-.metro-connect{display:flex;align-items:center;gap:0;margin:1rem 0;}
+.metro-connect{display:flex;align-items:center;margin:1rem 0;}
 .metro-connect .node{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--ink);background:var(--paper);flex-shrink:0;}
 .metro-connect .node.active{background:var(--ink);}
 .metro-connect .seg{flex:1;height:3px;background:var(--line);}
 .metro-connect .seg.active{background:var(--ink);}
-
-/* phase labels under metro line */
-.phase-labels{display:grid;grid-template-columns:1fr 1fr 1fr;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;text-align:center;color:var(--ghost);margin-top:5px;}
+.phase-labels{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;text-align:center;color:var(--ghost);margin-top:5px;}
 .phase-labels span.cur{color:var(--ink);}
 
-/* scrollbar */
 .feed-items::-webkit-scrollbar{width:4px;}
 .feed-items::-webkit-scrollbar-track{background:transparent;}
 .feed-items::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px;}
@@ -224,18 +201,12 @@ body{min-height:100vh;overflow-x:hidden;}
 </head>
 <body>
 
-<!-- ── decorative map background ── -->
 <div class="map-bg">
 <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-  <!-- red line -->
   <polyline points="80,200 280,200 420,340 680,340 820,480 1100,480" fill="none" stroke="#d63e2a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- blue line -->
   <polyline points="160,80 160,320 320,480 600,480 800,280 1050,280" fill="none" stroke="#2a6dd6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- green line -->
   <polyline points="0,560 300,560 480,380 700,380 900,560 1200,560" fill="none" stroke="#2ab85a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- yellow line -->
   <polyline points="200,700 400,500 600,500 780,700" fill="none" stroke="#d6a42a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- stations -->
   <circle cx="280" cy="200" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
   <circle cx="420" cy="340" r="9" fill="white" stroke="#0e0e12" stroke-width="3"/>
   <circle cx="680" cy="340" r="7" fill="white" stroke="#d63e2a" stroke-width="3"/>
@@ -251,7 +222,7 @@ body{min-height:100vh;overflow-x:hidden;}
 </svg>
 </div>
 
-<!-- ══ LOBBY ══ -->
+<!-- LOBBY -->
 <div class="scr on above" id="sLobby">
   <div class="lobby-wrap">
 
@@ -262,7 +233,6 @@ body{min-height:100vh;overflow-x:hidden;}
       <span class="brand-phase" id="phaseTag">phase 01 — lobby</span>
     </div>
 
-    <!-- Metro progress line -->
     <div>
       <div class="metro-connect">
         <div class="node active" id="node0"></div>
@@ -281,12 +251,11 @@ body{min-height:100vh;overflow-x:hidden;}
       </div>
     </div>
 
-    <div class="panel panel-pad qr-card">
+    <div class="panel qr-card">
       <div class="qr-frame" id="qrBox"></div>
       <div class="qr-right">
         <h3>Scan to join</h3>
-        <p>Friends scan the QR code to enter their name. Once everyone's in, press <strong>Start submissions</strong>.</p>
-        <div class="qr-url" id="qrUrlTxt">—</div>
+        <p>Friends scan the QR code to enter their name.<br>Once everyone's in, press <strong>Start submissions</strong>.</p>
       </div>
     </div>
 
@@ -309,7 +278,7 @@ body{min-height:100vh;overflow-x:hidden;}
     <div class="panel panel-pad feed">
       <div class="feed-head">
         <div class="metro-dot filled"></div>
-        <span class="label" style="margin-bottom:0;">Live roster</span>
+        <span class="label" style="margin-bottom:0;">Live submissions</span>
       </div>
       <div class="feed-items" id="feedList"><span class="feed-empty">Waiting for players to scan…</span></div>
     </div>
@@ -322,15 +291,13 @@ body{min-height:100vh;overflow-x:hidden;}
   </div>
 </div>
 
-<!-- ══ HOST VOTE ══ -->
+<!-- HOST VOTE -->
 <div class="scr above" id="sHostVote">
   <div class="hv-rail">
     <div class="hv-brand">
       <div class="brand-stripe"></div>
       <h2>movie night</h2>
     </div>
-
-    <!-- progress line (compact) -->
     <div>
       <div class="metro-connect">
         <div class="node active"></div>
@@ -342,14 +309,10 @@ body{min-height:100vh;overflow-x:hidden;}
         <div class="node"></div>
       </div>
       <div class="phase-labels">
-        <span>join</span>
-        <span>submit</span>
-        <span class="cur">vote</span>
-        <span></span>
+        <span>join</span><span>submit</span><span class="cur">vote</span><span></span>
       </div>
     </div>
-
-    <div class="ring-wrap" id="ringWrap">
+    <div class="ring-wrap">
       <svg width="80" height="80" viewBox="0 0 80 80">
         <circle fill="none" stroke="#e0dbd0" stroke-width="5" cx="40" cy="40" r="32"/>
         <circle id="ringArc" fill="none" stroke="#0e0e12" stroke-width="5" stroke-linecap="round"
@@ -357,20 +320,16 @@ body{min-height:100vh;overflow-x:hidden;}
       </svg>
       <div class="ring-num" id="p2Time">1:30</div>
     </div>
-
     <div class="vote-stat">
-      <div class="label">Votes cast</div>
+      <div class="label">Unique voters</div>
       <div style="font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:300;" id="vCount">0</div>
     </div>
-
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:.6rem;">
       <button class="btn" onclick="hostEndVoting()">Reveal winner</button>
       <button class="btn-ghost" onclick="hostReset()">Restart</button>
     </div>
   </div>
-
   <div class="hv-main">
-    <!-- progress line top -->
     <div style="margin-bottom:2rem;">
       <p class="label" style="margin-bottom:.35rem;">Live results</p>
       <p style="font-size:13px;color:var(--mute);" id="chartSub">Waiting for votes…</p>
@@ -379,38 +338,30 @@ body{min-height:100vh;overflow-x:hidden;}
   </div>
 </div>
 
-<!-- ══ REVEAL ══ -->
+<!-- REVEAL -->
 <div class="scr above" id="sReveal">
-  <div class="reveal-wrap">
-
-    <!-- progress line -->
+  <div class="reveal-wrap" style="padding:2rem 1.5rem;">
     <div style="margin-bottom:2rem;">
       <div class="metro-connect">
-        <div class="node active"></div>
-        <div class="seg active"></div>
-        <div class="node active"></div>
-        <div class="seg active"></div>
-        <div class="node active"></div>
-        <div class="seg active"></div>
+        <div class="node active"></div><div class="seg active"></div>
+        <div class="node active"></div><div class="seg active"></div>
+        <div class="node active"></div><div class="seg active"></div>
         <div class="node active"></div>
       </div>
       <div class="phase-labels"><span>join</span><span>submit</span><span>vote</span><span class="cur">result</span></div>
     </div>
-
     <div class="rev-top">
       <div class="div-line"></div>
       <div class="label" style="margin-bottom:.5rem;">Tonight's pick</div>
       <div class="rev-winner" id="revTitle">—</div>
       <div class="div-line"></div>
     </div>
-
     <div class="rev-list" id="revList"></div>
-
     <button class="btn" onclick="hostReset()">New night</button>
   </div>
 </div>
 
-<!-- ══ MOBILE ══ -->
+<!-- MOBILE -->
 <div class="scr above" id="sMobile">
   <div class="m-wrap">
     <div class="m-card">
@@ -424,9 +375,6 @@ body{min-height:100vh;overflow-x:hidden;}
 </div>
 
 <script>
-// ─────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────
 const ROOM_ID = 'room_' + getOrMakeRoom();
 const DB_URL  = 'https://sidequest-movie-night-default-rtdb.europe-west1.firebasedatabase.app/';
 
@@ -441,22 +389,16 @@ function getOrMakeRoom(){
 }
 
 const IS_MOBILE = new URLSearchParams(location.search).has('vote');
-const PHASE1_SECS = 180; // submit timer
-const PHASE2_SECS = 90;  // vote timer
+const PHASE1_SECS = 180;
+const PHASE2_SECS = 90;
 const CIRC2 = 201.06;
 
-// ─────────────────────────────────────
-// Firebase REST helpers
-// ─────────────────────────────────────
 const BASE = `${DB_URL}/${ROOM_ID}`;
 async function dbGet(p=''){const r=await fetch(`${BASE}${p}.json`);return r.ok?r.json():null;}
 async function dbSet(p,d){await fetch(`${BASE}${p}.json`,{method:'PUT',body:JSON.stringify(d)});}
 async function dbPatch(p,d){await fetch(`${BASE}${p}.json`,{method:'PATCH',body:JSON.stringify(d)});}
 async function dbDelete(p=''){await fetch(`${BASE}${p}.json`,{method:'DELETE'});}
 
-// ─────────────────────────────────────
-// SHARED
-// ─────────────────────────────────────
 let G = {};
 let intervals = [];
 function clearAll(){ intervals.forEach(clearInterval); intervals=[]; }
@@ -466,14 +408,7 @@ function esc(s){ const d=document.createElement('div'); d.textContent=s||''; ret
 
 const BAR_COLORS = ['#d63e2a','#2a6dd6','#2ab85a'];
 
-// ─────────────────────────────────────
-// HOST — LOBBY (phase: waiting)
-// Phase flow:
-//   'waiting' → players join by name only
-//   'submitting' → timer runs, players submit movies
-//   'voting' → ranked vote
-//   'reveal'
-// ─────────────────────────────────────
+// ─── HOST LOBBY ───
 async function hostLobby(){
   show('sLobby');
 
@@ -481,13 +416,12 @@ async function hostLobby(){
   voterUrl.searchParams.set('vote','1');
   voterUrl.searchParams.set('room', ROOM_ID.replace('room_',''));
   const vUrl = voterUrl.toString();
-  document.getElementById('qrUrlTxt').textContent = vUrl;
 
   const qrBox = document.getElementById('qrBox');
   qrBox.innerHTML = '';
   try {
-    new QRCode(qrBox,{text:vUrl,width:96,height:96,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
-  } catch(e){ qrBox.textContent = '⬛'; }
+    new QRCode(qrBox,{text:vUrl,width:204,height:204,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  } catch(e){ qrBox.textContent = 'QR error'; }
 
   let state = await dbGet('/state');
   if(!state || state.phase === 'reveal'){
@@ -495,7 +429,6 @@ async function hostLobby(){
     await dbSet('/state', state);
   }
   G = state;
-
   updateLobbyPhaseUI();
 
   tick(async()=>{
@@ -509,10 +442,9 @@ async function hostLobby(){
 }
 
 function updateLobbyPhaseUI(){
-  const isSubmitting = G.phase === 'submitting';
-  document.getElementById('timerBox').style.display = isSubmitting ? '' : 'none';
-  document.getElementById('mCountBox').style.display = '';
-  if(isSubmitting){
+  const isSub = G.phase === 'submitting';
+  document.getElementById('timerBox').style.display = isSub ? '' : 'none';
+  if(isSub){
     document.getElementById('mainBtn').textContent = 'Start voting now';
     document.getElementById('mainBtn').onclick = hostStartVoting;
     document.getElementById('phaseTag').textContent = 'phase 02 — submissions';
@@ -526,13 +458,15 @@ function updateLobbyPhaseUI(){
 }
 
 function setMetroProgress(step){
-  // step 0=waiting, 1=submitting, 2=voting, 3=reveal
-  const nodes = ['node0','node1','node2','node3'];
-  const segs = ['seg01','seg12','seg23'];
-  const labels = ['pl0','pl1','pl2','pl3'];
-  nodes.forEach((id,i)=>{ const el=document.getElementById(id); if(el){ el.classList.toggle('active',i<=step); }});
-  segs.forEach((id,i)=>{ const el=document.getElementById(id); if(el){ el.classList.toggle('active',i<step); }});
-  labels.forEach((id,i)=>{ const el=document.getElementById(id); if(el){ el.classList.toggle('cur',i===step); }});
+  ['node0','node1','node2','node3'].forEach((id,i)=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('active',i<=step);
+  });
+  ['seg01','seg12','seg23'].forEach((id,i)=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('active',i<step);
+  });
+  ['pl0','pl1','pl2','pl3'].forEach((id,i)=>{
+    const el=document.getElementById(id); if(el) el.classList.toggle('cur',i===step);
+  });
 }
 
 function updateLobbyUI(){
@@ -554,16 +488,20 @@ function updateLobbyUI(){
   const fl = document.getElementById('feedList');
   if(subs.length === 0){
     fl.innerHTML = '<span class="feed-empty">Waiting for players to scan…</span>';
-  } else {
-    fl.innerHTML = subs.map(s => {
-      const movies = (s.movies||[]);
-      const movieText = movies.length ? ` — ${movies.map(m=>esc(m)).join(' · ')}` : '';
-      return `<div class="feed-row">
-        <span class="feed-name">${esc(s.name)}</span>
-        <span class="feed-movies">${movieText || '<em style="color:var(--ghost)">no movies yet</em>'}</span>
-      </div>`;
-    }).join('');
+    return;
   }
+
+  // Show each player's name, then their movies as big dark tags
+  fl.innerHTML = subs.map(s => {
+    const movies = s.movies || [];
+    const movieHTML = movies.length
+      ? movies.map(m=>`<span class="sub-movie-tag">${esc(m)}</span>`).join('')
+      : `<span style="font-size:12px;color:var(--ghost);font-style:italic;">no picks yet</span>`;
+    return `<div class="sub-player">
+      <div class="sub-player-name">${esc(s.name)}</div>
+      <div class="sub-movies">${movieHTML}</div>
+    </div>`;
+  }).join('');
 }
 
 async function hostStartSubmissions(){
@@ -573,8 +511,6 @@ async function hostStartSubmissions(){
   const newState = { ...G, phase:'submitting', p1Start: Date.now() };
   await dbSet('/state', newState);
   G = newState;
-
-  // notify mobile clients
   tick(async()=>{
     G = await dbGet('/state') || G;
     updateLobbyUI();
@@ -606,9 +542,7 @@ async function hostStartVoting(){
   hostVote();
 }
 
-// ─────────────────────────────────────
-// HOST — VOTING
-// ─────────────────────────────────────
+// ─── HOST VOTE ───
 function hostVote(){
   show('sHostVote');
   renderBars();
@@ -626,7 +560,7 @@ function renderBars(){
   const mv = G.movies||[], vt = G.votes||{};
   const vc = G.voters ? Object.keys(G.voters).length : 0;
   document.getElementById('vCount').textContent = vc;
-  document.getElementById('chartSub').textContent = vc===0?'Waiting for votes…':`${vc} vote${vc===1?'':'s'} in`;
+  document.getElementById('chartSub').textContent = vc===0?'Waiting for votes…':`${vc} voter${vc===1?'':'s'} active`;
   const scores = mv.map(m=>vt[m]||0);
   const mx = Math.max(...scores.map(Math.abs), 1);
 
@@ -663,20 +597,16 @@ async function hostEndVoting(){
   showReveal();
 }
 
-// ─────────────────────────────────────
-// REVEAL
-// ─────────────────────────────────────
+// ─── REVEAL ───
 function showReveal(){
   show('sReveal');
-  const mv = G.movies||[], vt = G.votes||{};
-  const sorted = [...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
+  const mv=G.movies||[], vt=G.votes||{};
+  const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
   document.getElementById('revTitle').textContent = sorted[0]||'—';
-
-  const rankClass = ['rank1','rank2','rank3'];
-  const rankLabel = ['01','02','03'];
+  const rankClass=['rank1','rank2','rank3'];
+  const rankLabel=['01','02','03'];
   document.getElementById('revList').innerHTML = sorted.map((m,i)=>{
-    const sc = vt[m]||0;
-    const sign = sc>0?'+':'';
+    const sc=vt[m]||0, sign=sc>0?'+':'';
     return `<div class="rev-row ${rankClass[i]||'rank3'}">
       <span class="rev-medal mono">${rankLabel[i]||'—'}</span>
       <span class="rev-name">${esc(m)}</span>
@@ -691,227 +621,253 @@ async function hostReset(){
   location.href = location.pathname;
 }
 
-// ─────────────────────────────────────
-// MOBILE
-// ─────────────────────────────────────
-let myName='', myVotes={}, joined=false, submitted=false, voted=false;
+// ─── MOBILE ───
+let myName='', myMovies=[], myVotes={}, joined=false, voted=false;
 let mPoll=null;
 
 async function mobileInit(){
   show('sMobile');
   G = await dbGet('/state') || {};
   const ph = G.phase || 'waiting';
-
-  if(ph === 'waiting'){
-    if(joined) renderMWaitForSubmit();
-    else renderMJoinLobby();
-  } else if(ph === 'submitting'){
-    if(submitted) renderMWait();
-    else renderMSubmit();
-  } else if(ph === 'voting'){
-    if(voted) renderMDone();
-    else renderMVote();
-  } else if(ph === 'reveal'){
-    renderMReveal();
-  }
+  if(ph==='waiting'){ joined ? renderMWaitForSubmit() : renderMJoinLobby(); }
+  else if(ph==='submitting'){ renderMSubmit(); }
+  else if(ph==='voting'){ renderMVote(); }
+  else if(ph==='reveal'){ renderMReveal(); }
 }
 
-// Phase 0: Enter your name to join lobby
 function renderMJoinLobby(){
   document.getElementById('mContent').innerHTML=`
-    <div class="m-metro-badge"><div class="dot"></div><span>join lobby</span></div>
+    <div class="m-metro-badge"><div class="dot" style="background:var(--red)"></div><span>join lobby</span></div>
     <label class="m-label">Your name</label>
-    <input class="m-input" id="mName" placeholder="Enter your name…" maxlength="30"/>
+    <input class="m-input" id="mName" placeholder="Enter your name…" maxlength="30" style="margin-bottom:1rem;"/>
     <button class="m-btn" onclick="mJoin()">Join</button>
   `;
   if(myName) document.getElementById('mName').value=myName;
-  if(mPoll) clearInterval(mPoll);
-  mPoll=setInterval(async()=>{
-    const st=await dbGet('/state');
-    G=st||G;
-    if(st&&st.phase==='submitting'&&!submitted){ clearInterval(mPoll); mobileInit(); }
-    else if(st&&st.phase==='voting'&&!voted){ clearInterval(mPoll); mobileInit(); }
-    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); mobileInit(); }
-  },3000);
+  document.getElementById('mName').addEventListener('keydown', e=>{ if(e.key==='Enter') mJoin(); });
+  pollUntil(['submitting','voting','reveal']);
 }
 
 async function mJoin(){
   const name=(document.getElementById('mName').value||'').trim();
-  if(!name){alert('Enter your name!');return;}
+  if(!name){ alert('Enter your name!'); return; }
   myName=name;
   const key=name.replace(/[.#$/\[\]]/g,'_');
-  // Register presence with no movies yet
   await dbSet(`/state/submissions/${key}`,{name,movies:[]});
   joined=true;
   renderMWaitForSubmit();
 }
 
-// Waiting for host to start submissions
 function renderMWaitForSubmit(){
   document.getElementById('mContent').innerHTML=`
     <div class="m-state">
-      <span class="m-state-icon">🚉</span>
-      <h3>You're on the platform</h3>
+      <h3>You're in</h3>
       <p>Waiting for the host to open submissions…</p>
       <div style="margin-top:1.25rem;">
         <div class="label" style="margin-bottom:.4rem;">Logged in as</div>
         <div class="chip">${esc(myName)}</div>
       </div>
     </div>`;
-  if(mPoll) clearInterval(mPoll);
-  mPoll=setInterval(async()=>{
-    const st=await dbGet('/state');
-    G=st||G;
-    if(st&&st.phase==='submitting'){ clearInterval(mPoll); renderMSubmit(); }
-    else if(st&&st.phase==='voting'){ clearInterval(mPoll); renderMVote(); }
-    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); renderMReveal(); }
-  },2500);
+  pollUntil(['submitting','voting','reveal']);
 }
 
-// Phase 1: Submit movies
+// ─── MOBILE SUBMIT: one at a time, live, unlimited ───
 function renderMSubmit(){
+  if(mPoll) clearInterval(mPoll);
   document.getElementById('mContent').innerHTML=`
-    <div class="m-metro-badge"><div class="dot" style="background:var(--blue)"></div><span>submit picks</span></div>
-    <p style="font-size:11px;color:var(--mute);margin-bottom:.75rem;font-family:'DM Mono',monospace;letter-spacing:.04em;">as ${esc(myName)}</p>
-    <label class="m-label">Your movie picks <span style="color:var(--ghost)">(up to 3)</span></label>
-    <p class="m-hint">Suggest movies you'd love to watch tonight.</p>
-    <input class="m-input" id="mM1" placeholder="Movie 1…" maxlength="80"/>
-    <input class="m-input" id="mM2" placeholder="Movie 2… (optional)" maxlength="80"/>
-    <input class="m-input" id="mM3" placeholder="Movie 3… (optional)" maxlength="80"/>
-    <button class="m-btn" onclick="mSubmit()">Submit picks</button>
+    <div class="m-metro-badge"><div class="dot" style="background:var(--blue)"></div><span>add your picks</span></div>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--mute);margin-bottom:1rem;">as ${esc(myName)}</p>
+    <div class="m-movie-list" id="mMovieList"></div>
+    <div class="m-add-row">
+      <input class="m-add-input" id="mMovieInput" placeholder="Type a movie…" maxlength="80" autocomplete="off"/>
+      <button class="m-add-btn" onclick="mAddMovie()">+</button>
+    </div>
+    <p style="font-size:11px;color:var(--ghost);text-align:center;font-family:'DM Mono',monospace;letter-spacing:.05em;">add as many as you like</p>
   `;
-  if(mPoll) clearInterval(mPoll);
-  mPoll=setInterval(async()=>{
-    const st=await dbGet('/state');
-    G=st||G;
-    if(st&&st.phase==='voting'&&!submitted){ clearInterval(mPoll); mobileInit(); }
-    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); mobileInit(); }
-  },3000);
+  document.getElementById('mMovieInput').addEventListener('keydown', e=>{ if(e.key==='Enter') mAddMovie(); });
+  renderMMovieList();
+  pollUntil(['voting','reveal']);
 }
 
-async function mSubmit(){
-  const m1=(document.getElementById('mM1').value||'').trim();
-  if(!m1){alert('Add at least one movie!');return;}
-  const movies=[m1,
-    (document.getElementById('mM2').value||'').trim(),
-    (document.getElementById('mM3').value||'').trim()
-  ].filter(Boolean);
-  const key=myName.replace(/[.#$/\[\]]/g,'_');
-  await dbSet(`/state/submissions/${key}`,{name:myName,movies});
-  submitted=true;
-  renderMWait();
+function renderMMovieList(){
+  const el = document.getElementById('mMovieList');
+  if(!el) return;
+  if(myMovies.length === 0){
+    el.innerHTML = '<p class="m-movie-empty">No picks yet — add your first one above</p>';
+    return;
+  }
+  el.innerHTML = myMovies.map((m,i)=>`
+    <div class="m-movie-item">
+      <span>${esc(m)}</span>
+      <button class="m-movie-remove" onclick="mRemoveMovie(${i})" title="Remove">x</button>
+    </div>
+  `).join('');
 }
 
-function renderMWait(){
-  document.getElementById('mContent').innerHTML=`
-    <div class="m-state">
-      <span class="m-state-icon">⏳</span>
-      <h3>Picks submitted!</h3>
-      <p>Waiting for voting to begin…</p>
-    </div>`;
-  if(mPoll) clearInterval(mPoll);
-  mPoll=setInterval(async()=>{
-    const st=await dbGet('/state');
-    G=st||G;
-    if(st&&st.phase==='voting'){ clearInterval(mPoll); renderMVote(); }
-    else if(st&&st.phase==='reveal'){ clearInterval(mPoll); renderMReveal(); }
-  },2500);
+async function mAddMovie(){
+  const input = document.getElementById('mMovieInput');
+  if(!input) return;
+  const val = (input.value||'').trim();
+  if(!val) return;
+  myMovies.push(val);
+  input.value = '';
+  input.focus();
+  renderMMovieList();
+  // Push to DB immediately
+  const key = myName.replace(/[.#$/\[\]]/g,'_');
+  await dbSet(`/state/submissions/${key}`, { name:myName, movies:[...myMovies] });
 }
+
+async function mRemoveMovie(idx){
+  myMovies.splice(idx,1);
+  renderMMovieList();
+  const key = myName.replace(/[.#$/\[\]]/g,'_');
+  await dbSet(`/state/submissions/${key}`, { name:myName, movies:[...myMovies] });
+}
+
+// ─── MOBILE VOTE: instant, no cast button, changeable ───
+// myVotes = { movieName: 1 | -1 }
+// lastSentVotes tracks what's in the DB so we can diff and patch correctly
+
+let lastSentVotes = {};
 
 function renderMVote(){
-  const mv=G.movies||[];
-  myVotes={};
+  if(mPoll) clearInterval(mPoll);
+  const mv = G.movies||[];
+  // Reset vote state for this session
+  myVotes = {};
+  lastSentVotes = {};
+
   document.getElementById('mContent').innerHTML=`
     <div class="m-metro-badge"><div class="dot" style="background:var(--grn)"></div><span>vote</span></div>
-    <p class="vote-note" id="vNote">Pick one <strong>for</strong> and one <strong>against</strong></p>
+    <p style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--mute);margin-bottom:1rem;">as ${esc(myName)} — change your mind anytime</p>
+    <div class="vote-status" id="vStatus">Pick one for and one against</div>
     <div class="vote-list" id="vList">
       ${mv.map((m,i)=>`
         <div class="v-card" id="vc${i}">
           <div class="v-card-title">${esc(m)}</div>
           <div class="v-btns">
-            <button class="v-btn" id="up${i}" onclick="toggleV(${i},1)">+ For</button>
-            <button class="v-btn" id="dn${i}" onclick="toggleV(${i},-1)">− Against</button>
+            <button class="v-btn" id="up${i}" onclick="toggleV(${i},1)">for</button>
+            <button class="v-btn" id="dn${i}" onclick="toggleV(${i},-1)">against</button>
           </div>
         </div>`).join('')}
     </div>
-    <button class="m-btn" id="castBtn" onclick="castVote()" disabled>Cast vote</button>
   `;
-  if(mPoll) clearInterval(mPoll);
-  mPoll=setInterval(async()=>{
-    const st=await dbGet('/state');
-    G=st||G;
-    if(st&&st.phase==='reveal'){ clearInterval(mPoll); renderMReveal(); }
-  },3000);
+  pollUntil(['reveal']);
 }
 
-function toggleV(idx,dir){
-  const mv=G.movies||[];
-  const m=mv[idx];
-  myVotes[m]===dir ? delete myVotes[m] : (myVotes[m]=dir);
-  mv.forEach((mv2,i)=>{
+async function toggleV(idx, dir){
+  const mv = G.movies||[];
+  const m = mv[idx];
+
+  // If already set to this dir, undo it
+  if(myVotes[m] === dir){
+    delete myVotes[m];
+  } else {
+    myVotes[m] = dir;
+  }
+
+  // Update UI immediately
+  updateVoteUI();
+
+  // Compute diff and patch DB
+  await pushVoteDiff(mv);
+}
+
+function updateVoteUI(){
+  const mv = G.movies||[];
+  const ups = Object.values(myVotes).filter(v=>v===1).length;
+  const dns = Object.values(myVotes).filter(v=>v===-1).length;
+
+  mv.forEach((m2,i)=>{
     const card=document.getElementById('vc'+i);
     const upB=document.getElementById('up'+i);
     const dnB=document.getElementById('dn'+i);
-    if(!card)return;
+    if(!card) return;
     card.classList.remove('up','dn');
     upB.classList.remove('ua'); dnB.classList.remove('da');
-    if(myVotes[mv2]===1){card.classList.add('up');upB.classList.add('ua');}
-    else if(myVotes[mv2]===-1){card.classList.add('dn');dnB.classList.add('da');}
+    if(myVotes[m2]===1){ card.classList.add('up'); upB.classList.add('ua'); }
+    else if(myVotes[m2]===-1){ card.classList.add('dn'); dnB.classList.add('da'); }
   });
-  const ups=Object.values(myVotes).filter(v=>v===1).length;
-  const dns=Object.values(myVotes).filter(v=>v===-1).length;
-  const ok=ups===1&&dns===1;
-  document.getElementById('castBtn').disabled=!ok;
-  const note=document.getElementById('vNote');
-  if(ok){ note.innerHTML='<span class="vote-note ready">Ready to cast</span>'; note.className='vote-note ready'; }
-  else { note.innerHTML=`Pick one <strong>for</strong> and one <strong>against</strong>`; note.className='vote-note'; }
-}
 
-async function castVote(){
-  if(voted)return;
-  G=await dbGet('/state')||G;
-  if(G.phase!=='voting'){mobileInit();return;}
-  const key=myName.replace(/[.#$/\[\]]/g,'_');
-  if(G.voters&&G.voters[key]){voted=true;renderMDone();return;}
-  await dbPatch('/state/voters',{[key]:true});
-  for(const [m,v] of Object.entries(myVotes)){
-    const cur=(G.votes&&G.votes[m])||0;
-    await dbPatch('/state/votes',{[m]:cur+v});
+  const statusEl = document.getElementById('vStatus');
+  if(!statusEl) return;
+  if(ups===1 && dns===1){
+    statusEl.className='vote-status ok';
+    statusEl.textContent='Votes live — change anytime before time runs out';
+  } else if(ups>1||dns>1){
+    statusEl.className='vote-status';
+    statusEl.textContent='Only one for and one against allowed';
+  } else {
+    statusEl.className='vote-status';
+    statusEl.textContent='Pick one for and one against';
   }
-  voted=true;
-  renderMDone();
 }
 
-function renderMDone(){
-  if(mPoll)clearInterval(mPoll);
-  document.getElementById('mContent').innerHTML=`
-    <div class="m-state">
-      <span class="m-state-icon">✓</span>
-      <h3>Vote cast</h3>
-      <p>Watch the host screen for live results.</p>
-    </div>`;
-  mPoll=setInterval(async()=>{
-    const st=await dbGet('/state');
-    G=st||G;
-    if(st&&st.phase==='reveal'){clearInterval(mPoll);renderMReveal();}
-  },3000);
+async function pushVoteDiff(mv){
+  // We need to remove old vote contributions and add new ones
+  // lastSentVotes = previous snapshot of myVotes that's already in DB
+  const key = myName.replace(/[.#$/\[\]]/g,'_');
+
+  // Only push if we have a valid 1-for-1-against selection
+  const ups = Object.values(myVotes).filter(v=>v===1).length;
+  const dns = Object.values(myVotes).filter(v=>v===-1).length;
+
+  // Fetch current scores
+  const currentVotes = await dbGet('/state/votes') || {};
+  const patch = {};
+
+  // Undo last sent votes
+  for(const [m,v] of Object.entries(lastSentVotes)){
+    patch[m] = (currentVotes[m]||0) - v;
+  }
+
+  // Apply new votes (only if valid)
+  if(ups===1 && dns===1){
+    for(const [m,v] of Object.entries(myVotes)){
+      // Base on patched value or current
+      const base = patch[m] !== undefined ? patch[m] : (currentVotes[m]||0);
+      patch[m] = base + v;
+    }
+    lastSentVotes = {...myVotes};
+    // Mark voter
+    await dbPatch('/state/voters',{[key]:true});
+  } else {
+    // Partial/cleared — remove voter flag too
+    lastSentVotes = {};
+    await dbPatch('/state/voters',{[key]:false});
+  }
+
+  if(Object.keys(patch).length > 0){
+    await dbPatch('/state/votes', patch);
+  }
+}
+
+// ─── MOBILE: poll until phase changes ───
+function pollUntil(phases){
+  if(mPoll) clearInterval(mPoll);
+  mPoll = setInterval(async()=>{
+    const st = await dbGet('/state');
+    if(!st) return;
+    G = st;
+    if(phases.includes(st.phase)){
+      clearInterval(mPoll);
+      mobileInit();
+    }
+  }, 2500);
 }
 
 function renderMReveal(){
-  if(mPoll)clearInterval(mPoll);
-  const mv=G.movies||[],vt=G.votes||{};
+  if(mPoll) clearInterval(mPoll);
+  const mv=G.movies||[], vt=G.votes||{};
   const sorted=[...mv].sort((a,b)=>(vt[b]||0)-(vt[a]||0));
   document.getElementById('mContent').innerHTML=`
     <div class="m-state">
-      <span class="m-state-icon">★</span>
-      <div class="label" style="margin-bottom:.5rem;">Tonight's pick</div>
-      <h3 style="font-size:1.1rem;font-family:'DM Mono',monospace;font-weight:400;">${esc(sorted[0]||'—')}</h3>
+      <div class="label" style="margin-bottom:.6rem;">Tonight's pick</div>
+      <h3 style="font-size:1.2rem;font-family:'DM Mono',monospace;font-weight:300;letter-spacing:-.01em;">${esc(sorted[0]||'—')}</h3>
     </div>`;
 }
 
-// ─────────────────────────────────────
-// BOOT
-// ─────────────────────────────────────
+// ─── BOOT ───
 (async function boot(){
   if(IS_MOBILE){
     await mobileInit();
@@ -920,7 +876,6 @@ function renderMReveal(){
     G = st || {};
     if(G.phase==='voting'){ hostVote(); }
     else if(G.phase==='reveal'){ showReveal(); }
-    else if(G.phase==='submitting'){ await hostLobby(); }
     else { hostLobby(); }
   }
 })();
