@@ -285,6 +285,16 @@ function clearAll(){ivs.forEach(clearInterval);ivs=[];}
 function tick(fn,ms){const id=setInterval(fn,ms);ivs.push(id);return id;}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
+// Proper Fisher-Yates shuffle — fixes "always picks first 3 movies" bug
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
 const CHIP_COLORS=['var(--red)','var(--blue)','var(--grn)','var(--ylw)','var(--ink)'];
 const BAR_COLORS=['#d63e2a','#2a6dd6','#2ab85a'];
 
@@ -308,16 +318,17 @@ const GRAV=0.38,DAMP=0.48,FRIC=0.978;
 const BALL_R_MIN=52,BALL_R_MAX=72;
 const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a','#8b5cf6','#d6a42a'];
 
-/* Build the U-shape as a series of wall segments.
-   The bowl is a rectangle open at the top, with a rounded bottom.
-   We define it in canvas-local coords and recompute on resize. */
+// FIX 1: Bowl has a max-width so it doesn't stretch across wide screens.
+// It sits centred in the canvas; we store an x-offset for that.
 let uBowl={x:0,y:0,w:0,h:0,rx:0};
+const BOWL_MAX_W=820;
 
 function getUBowl(){
   const pad=40;
-  const x=pad;
+  const rawW=CW-pad*2;
+  const w=Math.min(rawW,BOWL_MAX_W);
+  const x=Math.round((CW-w)/2); // centred
   const y=Math.round(CH*0.06);
-  const w=CW-pad*2;
   const h=CH-y-pad;
   const rx=Math.min(w*0.18,h*0.28);
   return{x,y,w,h,rx};
@@ -336,8 +347,6 @@ function initFish(){
   fishLoop();
 }
 
-/* Resolve a ball against the U-bowl walls.
-   The bowl has: left wall, right wall, flat bottom, and two bottom corners (quarter-circles). */
 function resolveUBowl(b){
   const{x,y,w,h,rx}=uBowl;
   const right=x+w, bottom=y+h;
@@ -345,53 +354,29 @@ function resolveUBowl(b){
   const innerLeft=x+rx;
   const innerRight=right-rx;
 
-  // Left straight wall
-  if(b.x-b.r<x){
-    b.x=x+b.r;
-    b.vx=Math.abs(b.vx)*DAMP;
-  }
-  // Right straight wall
-  if(b.x+b.r>right){
-    b.x=right-b.r;
-    b.vx=-Math.abs(b.vx)*DAMP;
-  }
-  // Flat bottom (between the two corner arcs)
+  if(b.x-b.r<x){b.x=x+b.r;b.vx=Math.abs(b.vx)*DAMP;}
+  if(b.x+b.r>right){b.x=right-b.r;b.vx=-Math.abs(b.vx)*DAMP;}
   if(b.x>=innerLeft&&b.x<=innerRight&&b.y+b.r>bottom){
-    b.y=bottom-b.r;
-    b.vy=-Math.abs(b.vy)*DAMP;
-    b.vx*=FRIC;
+    b.y=bottom-b.r;b.vy=-Math.abs(b.vy)*DAMP;b.vx*=FRIC;
   }
-  // Bottom-left corner arc
   if(b.x<innerLeft&&b.y>innerBottom){
     const cx=innerLeft,cy=innerBottom;
-    const dx=b.x-cx,dy=b.y-cy;
-    const dist=Math.hypot(dx,dy);
-    const minDist=rx+b.r;
-    // only push outward if inside the arc zone
+    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy),minDist=rx+b.r;
     if(dist<minDist&&dist>0.01){
       const nx=dx/dist,ny=dy/dist;
       b.x=cx+nx*minDist;b.y=cy+ny*minDist;
       const dot=b.vx*nx+b.vy*ny;
-      if(dot<0){
-        b.vx=(b.vx-2*dot*nx)*DAMP;
-        b.vy=(b.vy-2*dot*ny)*DAMP;
-      }
+      if(dot<0){b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;}
     }
   }
-  // Bottom-right corner arc
   if(b.x>innerRight&&b.y>innerBottom){
     const cx=innerRight,cy=innerBottom;
-    const dx=b.x-cx,dy=b.y-cy;
-    const dist=Math.hypot(dx,dy);
-    const minDist=rx+b.r;
+    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy),minDist=rx+b.r;
     if(dist<minDist&&dist>0.01){
       const nx=dx/dist,ny=dy/dist;
       b.x=cx+nx*minDist;b.y=cy+ny*minDist;
       const dot=b.vx*nx+b.vy*ny;
-      if(dot<0){
-        b.vx=(b.vx-2*dot*nx)*DAMP;
-        b.vy=(b.vy-2*dot*ny)*DAMP;
-      }
+      if(dot<0){b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;}
     }
   }
 }
@@ -419,8 +404,6 @@ function drawUBowlOutline(){
   const{x,y,w,h,rx}=uBowl;
   const right=x+w,bottom=y+h;
   ctx.beginPath();
-  // Start top-left, go down left wall, round bottom-left corner,
-  // across bottom, round bottom-right corner, up right wall, stop at top-right
   ctx.moveTo(x, y);
   ctx.lineTo(x, bottom-rx);
   ctx.arcTo(x, bottom, x+rx, bottom, rx);
@@ -435,11 +418,8 @@ function drawUBowlOutline(){
 function fishLoop(){
   if(!ctx)return;
   ctx.clearRect(0,0,CW,CH);
-
-  // Draw U outline
   drawUBowlOutline();
 
-  // Clip to U interior
   const{x,y,w,h,rx}=uBowl;
   const right=x+w,bottom=y+h;
   ctx.save();
@@ -457,10 +437,8 @@ function fishLoop(){
     const b=balls[i];
     b.vy+=GRAV;b.vx*=FRIC;b.vy*=FRIC;
     b.x+=b.vx;b.y+=b.vy;
-
     resolveUBowl(b);
 
-    // Ball-ball collisions
     for(let j=i+1;j<balls.length;j++){
       const o=balls[j];
       const ddx=o.x-b.x,ddy=o.y-b.y,dd=Math.hypot(ddx,ddy);
@@ -473,7 +451,6 @@ function fishLoop(){
       }
     }
 
-    // Draw ball
     ctx.save();
     ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
     if(b.selected){
@@ -486,7 +463,6 @@ function fishLoop(){
       ctx.fillStyle=b.col;ctx.fill();
     }
 
-    // Text rendering — larger font, tight word-wrap
     const maxW=(b.r*2)-22;
     const textColor=b.selected?b.col:'#f5f2eb';
     ctx.fillStyle=textColor;
@@ -495,28 +471,17 @@ function fishLoop(){
 
     const words=b.text.split(' ');
     let lines=[];
-    if(words.length===1){
-      lines=[b.text];
-    } else {
-      // Greedy line wrap into 2 lines
-      const mid=Math.ceil(words.length/2);
-      lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')];
-    }
+    if(words.length===1){lines=[b.text];}
+    else{const mid=Math.ceil(words.length/2);lines=[words.slice(0,mid).join(' '),words.slice(mid).join(' ')];}
 
-    // Find font size that fits all lines
     let fs=18;
     ctx.font=`500 ${fs}px 'DM Mono',monospace`;
     while(fs>11&&lines.some(l=>ctx.measureText(l).width>maxW)){
-      fs--;
-      ctx.font=`500 ${fs}px 'DM Mono',monospace`;
+      fs--;ctx.font=`500 ${fs}px 'DM Mono',monospace`;
     }
 
-    const lineH=fs*1.25;
-    const totalH=(lines.length-1)*lineH;
-    lines.forEach((line,li)=>{
-      ctx.fillText(line,b.x,b.y-totalH/2+li*lineH);
-    });
-
+    const lineH=fs*1.25,totalH=(lines.length-1)*lineH;
+    lines.forEach((line,li)=>{ctx.fillText(line,b.x,b.y-totalH/2+li*lineH);});
     ctx.restore();
   }
   ctx.restore();
@@ -524,12 +489,16 @@ function fishLoop(){
 }
 
 /* ══ SELECTION ANIMATION ══ */
+// FIX 2: animating is a flag the DB poll checks — it won't navigate away mid-animation
+let animating=false;
+
 async function runSelectionAnimation(picked){
+  animating=true;
   return new Promise(resolve=>{
     const total=balls.length;
-    if(!total){resolve();return;}
+    if(!total){animating=false;resolve();return;}
     let hlIdx=0,cycleCount=0,maxCycles=total*4+14;
-    const shuffled=[...balls].sort(()=>Math.random()-.5);
+    const shuffled=shuffle(balls);
     const cycle=setInterval(()=>{
       balls.forEach(b=>{b.highlight=false;b.selected=false;});
       const b=shuffled[hlIdx%shuffled.length];
@@ -540,7 +509,11 @@ async function runSelectionAnimation(picked){
         balls.forEach(b=>{b.highlight=false;});
         let pi=0;
         const reveal=setInterval(()=>{
-          if(pi>=picked.length){clearInterval(reveal);setTimeout(resolve,1000);return;}
+          if(pi>=picked.length){
+            clearInterval(reveal);
+            setTimeout(()=>{animating=false;resolve();},1000);
+            return;
+          }
           const target=balls.find(b=>b.text===picked[pi]);
           if(target)target.selected=true;
           pi++;
@@ -568,7 +541,6 @@ async function hostLobby(){
     await dbSet('/state',state);
   }
   G=state;
-  // Init lobby with current players without any animation
   lobbyRenderedNames=new Set();
   updateLobbyUI(true);
 
@@ -581,7 +553,6 @@ async function hostLobby(){
   },2000);
 }
 
-// Track which names are already rendered so we never re-render them
 let lobbyRenderedNames=new Set();
 
 function updateLobbyUI(initial){
@@ -595,18 +566,15 @@ function updateLobbyUI(initial){
     return;
   }
 
-  // Remove the empty placeholder if present
   const empty=document.getElementById('lobbyEmpty');
   if(empty)empty.remove();
 
-  // Only add chips for names not yet rendered
   subs.forEach((s,i)=>{
     if(lobbyRenderedNames.has(s.name))return;
     lobbyRenderedNames.add(s.name);
     const col=CHIP_COLORS[i%CHIP_COLORS.length];
     const chip=document.createElement('div');
     chip.className='player-chip';
-    // Skip the entrance animation on initial load (already joined)
     if(initial)chip.style.animation='none';
     chip.innerHTML=`<div class="player-chip-dot" style="background:${col}"></div>${esc(s.name)}`;
     chips.appendChild(chip);
@@ -636,7 +604,6 @@ function hostSubmitScreen(){
     }));
   },380);
 
-  // Smooth 1-second timer — completely separate from the DB poll
   if(submitTimerIv)clearInterval(submitTimerIv);
   submitTimerIv=setInterval(()=>{
     if(!G.p1Start)return;
@@ -648,10 +615,13 @@ function hostSubmitScreen(){
   },1000);
   ivs.push(submitTimerIv);
 
-  // DB poll at 2s — movie sync only, no timer logic here
   tick(async()=>{
     G=await dbGet('/state')||G;
-    if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();return;}
+    // FIX 2: Don't navigate away if the selection animation is running
+    if(G.phase==='voting'){
+      if(!animating){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();}
+      return;
+    }
     const subs=G.submissions?Object.values(G.submissions):[];
     const allM=[];subs.forEach(s=>(s.movies||[]).forEach(m=>allM.push(m)));
 
@@ -662,7 +632,6 @@ function hostSubmitScreen(){
 
     document.getElementById('fishMCount').textContent=allM.length;
 
-    // Auto-advance when timer expires
     if(G.p1Start&&(Date.now()-G.p1Start)/1000>=P1){
       clearAll();await hostStartVoting();
     }
@@ -679,7 +648,10 @@ async function hostStartVoting(){
   subs.forEach(s=>(s.movies||[]).forEach(m=>all.push(m)));
   const defaults=['The Dark Knight','Inception','Parasite','Pulp Fiction','Interstellar','Get Out','The Matrix','Goodfellas','Whiplash','La La Land'];
   while(all.length<3)all.push(defaults[Math.floor(Math.random()*defaults.length)]);
-  const picked=all.sort(()=>Math.random()-.5).slice(0,3);
+
+  // FIX 3: Use proper Fisher-Yates shuffle instead of .sort(() => Math.random() - 0.5)
+  const picked=shuffle(all).slice(0,3);
+
   const votes={};picked.forEach(m=>{votes[m]=0;});
   const ns={...G,phase:'voting',p2Start:Date.now(),movies:picked,votes,voters:{}};
   await dbSet('/state',ns);G=ns;
@@ -694,12 +666,10 @@ function hostVote(){
   show('sHostVote');
   renderVoteBars();
 
-  // Smooth 1-second ring timer
   tick(()=>{
     if(G.p2Start)updateVoteRing();
   },1000);
 
-  // DB poll at 2s
   tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase!=='voting'){clearAll();return;}
