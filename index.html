@@ -352,67 +352,69 @@ function resolveUBowl(b){
   const right=x+w;
   const bottom=y+h;
 
-  // LEFT WALL (straight section)
-  if(b.x-b.r < x){
-    b.x=x+b.r;
-    b.vx=Math.abs(b.vx)*DAMP;
-  }
-  // RIGHT WALL (straight section)
-  if(b.x+b.r > right){
-    b.x=right-b.r;
-    b.vx=-Math.abs(b.vx)*DAMP;
-  }
-  // TOP RIM — prevent escaping upward
-  if(b.y-b.r < y){
-    b.y=y+b.r;
-    b.vy=Math.abs(b.vy)*0.2;
-  }
-  // FLAT FLOOR (between the two corner arcs)
-  if(b.x >= x+rx && b.x <= right-rx){
+  // Corner arc centres
+  const blcx=x+rx,    blcy=bottom-rx;  // bottom-left
+  const brcx=right-rx, brcy=bottom-rx; // bottom-right
+
+  const inLeftCornerZone  = b.x < blcx && b.y > blcy;
+  const inRightCornerZone = b.x > brcx && b.y > brcy;
+
+  if(inLeftCornerZone){
+    // Concave corner: ball must stay inside the arc (dist from centre <= rx - b.r)
+    const dx=b.x-blcx, dy=b.y-blcy;
+    const dist=Math.hypot(dx,dy);
+    const maxDist=rx-b.r;
+    if(dist>maxDist&&dist>0.01){
+      const nx=dx/dist, ny=dy/dist;
+      b.x=blcx+nx*maxDist;
+      b.y=blcy+ny*maxDist;
+      const dot=b.vx*nx+b.vy*ny;
+      if(dot>0){
+        b.vx=(b.vx-2*dot*nx)*DAMP;
+        b.vy=(b.vy-2*dot*ny)*DAMP;
+        b.vx*=0.92;
+      }
+    }
+  } else if(inRightCornerZone){
+    const dx=b.x-brcx, dy=b.y-brcy;
+    const dist=Math.hypot(dx,dy);
+    const maxDist=rx-b.r;
+    if(dist>maxDist&&dist>0.01){
+      const nx=dx/dist, ny=dy/dist;
+      b.x=brcx+nx*maxDist;
+      b.y=brcy+ny*maxDist;
+      const dot=b.vx*nx+b.vy*ny;
+      if(dot>0){
+        b.vx=(b.vx-2*dot*nx)*DAMP;
+        b.vy=(b.vy-2*dot*ny)*DAMP;
+        b.vx*=0.92;
+      }
+    }
+  } else {
+    // Straight sections only apply outside the corner zones
+
+    // LEFT WALL
+    if(b.x-b.r < x){
+      b.x=x+b.r;
+      b.vx=Math.abs(b.vx)*DAMP;
+    }
+    // RIGHT WALL
+    if(b.x+b.r > right){
+      b.x=right-b.r;
+      b.vx=-Math.abs(b.vx)*DAMP;
+    }
+    // FLAT FLOOR
     if(b.y+b.r > bottom){
       b.y=bottom-b.r;
       b.vy=-Math.abs(b.vy)*DAMP;
-      b.vx*=0.92; // floor friction
+      b.vx*=0.92;
     }
   }
 
-  // BOTTOM-LEFT ROUNDED CORNER
-  // The arc centre is at (x+rx, bottom-rx)
-  const blcx=x+rx, blcy=bottom-rx;
-  if(b.x < blcx && b.y > blcy){
-    const dx=b.x-blcx, dy=b.y-blcy;
-    const dist=Math.hypot(dx,dy);
-    const minDist=rx+b.r; // ball must stay outside the arc's inner radius
-    // The inner radius of the corner is rx; ball centre must be >= rx+b.r from corner centre
-    if(dist < minDist){
-      const nx=dx/dist, ny=dy/dist;
-      b.x=blcx+nx*minDist;
-      b.y=blcy+ny*minDist;
-      const dot=b.vx*nx+b.vy*ny;
-      if(dot<0){ // only reflect if moving into the wall
-        b.vx=(b.vx-2*dot*nx)*DAMP;
-        b.vy=(b.vy-2*dot*ny)*DAMP;
-      }
-    }
-  }
-
-  // BOTTOM-RIGHT ROUNDED CORNER
-  // The arc centre is at (right-rx, bottom-rx)
-  const brcx=right-rx, brcy=bottom-rx;
-  if(b.x > brcx && b.y > brcy){
-    const dx=b.x-brcx, dy=b.y-brcy;
-    const dist=Math.hypot(dx,dy);
-    const minDist=rx+b.r;
-    if(dist < minDist){
-      const nx=dx/dist, ny=dy/dist;
-      b.x=brcx+nx*minDist;
-      b.y=brcy+ny*minDist;
-      const dot=b.vx*nx+b.vy*ny;
-      if(dot<0){
-        b.vx=(b.vx-2*dot*nx)*DAMP;
-        b.vy=(b.vy-2*dot*ny)*DAMP;
-      }
-    }
+  // TOP RIM — always enforced regardless of zone
+  if(b.y-b.r < y){
+    b.y=y+b.r;
+    b.vy=Math.abs(b.vy)*0.2;
   }
 }
 
