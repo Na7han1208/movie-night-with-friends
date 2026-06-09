@@ -349,9 +349,17 @@ function show(id){
 
 /* ══ PHYSICS FISHBOWL ══ */
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
-const GRAV=0.38,DAMP=0.58,FRIC=0.982;
-const FONT_POOL=[26,30,34,38,42];
+const GRAV=0.38,DAMP=0.55,FRIC=0.978;
+const FONT_POOL=[22,26,30,34];
 const PILL_COLORS=['#0e0e12','#d63e2a','#2a6dd6','#2ab85a'];
+
+// Bowl is a fixed circle, not stretching to fill stage
+const BOWL_R_FRAC = 0.38; // fraction of min(CW,CH)
+
+function getBowl(){
+  const r = Math.min(CW,CH) * BOWL_R_FRAC;
+  return { cx: CW/2, cy: CH/2, r };
+}
 
 function initFish(){
   cvs=document.getElementById('fishCanvas');
@@ -370,59 +378,89 @@ function dropBall(text){
   const fs=FONT_POOL[Math.floor(Math.random()*FONT_POOL.length)];
   ctx.font=`500 ${fs}px 'DM Mono',monospace`;
   const tw=ctx.measureText(text).width;
-  const pw=tw+32,ph=fs+22;
+  const pw=tw+28,ph=fs+18;
   const col=PILL_COLORS[Math.floor(Math.random()*PILL_COLORS.length)];
+  const bowl=getBowl();
   balls.push({
-    x:CW/2+(Math.random()-.5)*CW*0.3,y:-ph-10,
-    vx:(Math.random()-.5)*4,vy:0,
+    x:bowl.cx+(Math.random()-.5)*bowl.r*0.4,
+    y:-ph-10,
+    vx:(Math.random()-.5)*3,vy:0,
     text,fs,pw,ph,col,
-    rot:(Math.random()-.5)*.25,rotV:(Math.random()-.5)*.05,
+    rot:(Math.random()-.5)*.15,
+    rotV:(Math.random()-.5)*.04,
     r:Math.hypot(pw,ph)/2
   });
+}
+
+function removeBall(text){
+  const idx=balls.findIndex(b=>b.text===text);
+  if(idx!==-1)balls.splice(idx,1);
 }
 
 function fishLoop(){
   if(!ctx)return;
   ctx.clearRect(0,0,CW,CH);
-  const cx=CW/2,cy=CH/2,rx=CW/2-12,ry=CH/2-12;
+  const bowl=getBowl();
+  const {cx,cy,r}=bowl;
 
+  // Draw bowl outline
   ctx.save();
   ctx.strokeStyle='#0e0e12';ctx.lineWidth=3;
-  ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.ellipse(cx,cy,rx-3,ry-3,0,0,Math.PI*2);ctx.clip();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+
+  // Clip to bowl interior
+  ctx.beginPath();ctx.arc(cx,cy,r-2,0,Math.PI*2);ctx.clip();
 
   for(let i=0;i<balls.length;i++){
     const b=balls[i];
-    b.vy+=GRAV;b.vx*=FRIC;b.vy*=FRIC;
-    b.rotV*=0.97;b.x+=b.vx;b.y+=b.vy;b.rot+=b.rotV;
+    b.vy+=GRAV;
+    b.vx*=FRIC;b.vy*=FRIC;
+    // Strongly damp rotation so it stops spinning
+    b.rotV*=0.90;
+    if(Math.abs(b.rotV)<0.001)b.rotV=0;
+    b.x+=b.vx;b.y+=b.vy;b.rot+=b.rotV;
 
-    const dx=(b.x-cx)/(rx-b.r*.55),dy=(b.y-cy)/(ry-b.r*.55);
-    const d=Math.sqrt(dx*dx+dy*dy);
-    if(d>1){
-      const nx=dx/d,ny=dy/d;
-      b.x=cx+nx*(rx-b.r*.55);b.y=cy+ny*(ry-b.r*.55);
+    // Circular wall collision — use pill radius as collision proxy
+    const collR = b.r * 0.52;
+    const dx=b.x-cx, dy=b.y-cy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const maxDist=r-collR;
+    if(dist>maxDist&&dist>0.01){
+      const nx=dx/dist, ny=dy/dist;
+      b.x=cx+nx*maxDist;
+      b.y=cy+ny*maxDist;
       const dot=b.vx*nx+b.vy*ny;
-      b.vx=(b.vx-2*dot*nx)*DAMP;b.vy=(b.vy-2*dot*ny)*DAMP;
-      b.rotV+=(Math.random()-.5)*.12;
+      b.vx=(b.vx-2*dot*nx)*DAMP;
+      b.vy=(b.vy-2*dot*ny)*DAMP;
+      // Only a tiny rotation nudge on wall hit, not continuous spin
+      b.rotV+=(Math.random()-.5)*0.03;
     }
 
+    // Ball-ball collisions
     for(let j=i+1;j<balls.length;j++){
       const o=balls[j];
-      const ddx=o.x-b.x,ddy=o.y-b.y,dd=Math.hypot(ddx,ddy);
-      const md=(b.r+o.r)*.68;
-      if(dd<md&&dd>.01){
-        const nx=ddx/dd,ny=ddy/dd,ov=md-dd;
-        b.x-=nx*ov*.5;b.y-=ny*ov*.5;o.x+=nx*ov*.5;o.y+=ny*ov*.5;
+      const ddx=o.x-b.x, ddy=o.y-b.y;
+      const dd=Math.hypot(ddx,ddy);
+      const md=(b.r+o.r)*0.62;
+      if(dd<md&&dd>0.01){
+        const nx=ddx/dd, ny=ddy/dd;
+        const ov=(md-dd)*0.5;
+        b.x-=nx*ov;b.y-=ny*ov;
+        o.x+=nx*ov;o.y+=ny*ov;
         const dv=(b.vx-o.vx)*nx+(b.vy-o.vy)*ny;
-        const imp=dv*.6;
-        b.vx-=imp*nx;b.vy-=imp*ny;o.vx+=imp*nx;o.vy+=imp*ny;
-        b.rotV+=imp*.1;o.rotV-=imp*.1;
+        const imp=dv*0.55;
+        b.vx-=imp*nx;b.vy-=imp*ny;
+        o.vx+=imp*nx;o.vy+=imp*ny;
+        // Minimal rotation from collisions
+        b.rotV+=(Math.random()-.5)*0.02;
+        o.rotV-=(Math.random()-.5)*0.02;
       }
     }
 
+    // Draw pill
     ctx.save();
     ctx.translate(b.x,b.y);ctx.rotate(b.rot);
-    const hw=b.pw/2,hh=b.ph/2;
+    const hw=b.pw/2, hh=b.ph/2;
     ctx.beginPath();ctx.roundRect(-hw,-hh,b.pw,b.ph,hh);
     ctx.fillStyle=b.col;ctx.fill();
     ctx.fillStyle='#f5f2eb';
@@ -493,13 +531,24 @@ function hostSubmitScreen(){
     }));
   },380);
 
-  tick(async()=>{
+tick(async()=>{
     G=await dbGet('/state')||G;
     if(G.phase==='voting'){clearAll();if(raf)cancelAnimationFrame(raf);hostVote();return;}
     const subs=G.submissions?Object.values(G.submissions):[];
     const allM=[];subs.forEach(s=>(s.movies||[]).forEach(m=>allM.push(m)));
-    document.getElementById('fishMCount').textContent=allM.length;
+
+    // Add new balls
     allM.forEach(m=>{if(!seenMovies.has(m)){seenMovies.add(m);dropBall(m);}});
+
+    // Remove deleted balls
+    seenMovies.forEach(m=>{
+      if(!allM.includes(m)){
+        seenMovies.delete(m);
+        removeBall(m);
+      }
+    });
+
+    document.getElementById('fishMCount').textContent=allM.length;
     if(G.p1Start){
       const el=Math.min((Date.now()-G.p1Start)/1000,P1);
       const rem=Math.max(0,P1-el);
@@ -508,7 +557,6 @@ function hostSubmitScreen(){
       if(el>=P1){clearAll();await hostStartVoting();}
     }
   },2000);
-}
 
 async function hostStartVoting(){
   clearAll();if(raf)cancelAnimationFrame(raf);
