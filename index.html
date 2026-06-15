@@ -280,7 +280,8 @@ function shuffle(arr){
   return a;
 }
 
-/* ══ MOVIE LIST — loaded once from movies.json ══ */
+/* ══ MOVIE LIST  ══ */
+  // loads from movies.json in repo, nts add toggle to use this or any movie later
 let MOVIE_LIST=[];
 async function loadMovieList(){
   try{
@@ -306,7 +307,7 @@ function show(id){
   },activeScr?280:0);
 }
 
-/* ══ PHYSICS U-BOWL ══ */
+/* ══ FIH BOWL ══ */
 let balls=[],raf=null,cvs=null,ctx=null,CW=0,CH=0;
 const GRAV=0.38,DAMP=0.48,FRIC=0.978;
 const BALL_R_MIN=52,BALL_R_MAX=72;
@@ -715,16 +716,16 @@ function mWait(){
   pollUntil(['submitting','voting','reveal']);
 }
 
-/* ══ MOBILE SUBMIT — search dropdown ══ */
+/* ══ MOBILE SUBMIT ══ */
 
-// Returns all movies already claimed by any player across the whole room
+// returns all movies already claimed by any player across the whole room
 function getTakenMovies(){
   if(!G.submissions)return new Set();
   const taken=new Set();
   Object.values(G.submissions).forEach(s=>{
     const key=myName.replace(/[.#$/\[\]]/g,'_');
-    // Only count movies taken by OTHER players, not this player's own list
-    // (we handle own-list duplication separately)
+    // only count movies taken by OTHER players, not this player's own list
+    // (handle own-list duplication separately)
     const subKey=Object.keys(G.submissions).find(k=>G.submissions[k].name===s.name);
     const myKey=myName.replace(/[.#$/\[\]]/g,'_');
     if(subKey!==myKey)(s.movies||[]).forEach(m=>taken.add(m));
@@ -768,7 +769,7 @@ function setupSearch(){
     renderDropdown(q);
   });
 
-  // Close dropdown when clicking outside
+  // close dropdown when clicking outside
   document.addEventListener('click',function handler(e){
     if(!document.getElementById('mSearchWrap')?.contains(e.target)){
       dd.classList.remove('open');
@@ -784,7 +785,6 @@ function renderDropdown(q){
 
   const taken=getTakenMovies();
 
-  // Filter: matches query, not already in MY list, not taken by others
   const filtered=MOVIE_LIST.filter(m=>{
     if(myMovies.includes(m))return false; // already in my list
     const matchesQuery=!q||m.toLowerCase().includes(q);
@@ -846,7 +846,7 @@ async function mRemove(idx){
   myMovies.splice(idx,1);
   renderMMovieList();
   updatePicksCount();
-  // Re-enable input if under limit
+  // re-enable input if under limit
   const inp=document.getElementById('mSearchInput');
   if(inp)inp.disabled=false;
   const key=myName.replace(/[.#$/\[\]]/g,'_');
@@ -854,6 +854,10 @@ async function mRemove(idx){
 }
 
 /* ══ MOBILE VOTE ══ */
+  /*
+  NTS: this shit barely works, intense desync 
+  when spamming the votes end op kinda random, users didn't notice this, but it's there. kinda important to fix
+  */
 function mVoteScreen(){
   if(mPoll)clearInterval(mPoll);
   const mv=G.movies||[];myVotes={};lastSent={};
