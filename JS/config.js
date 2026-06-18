@@ -1,4 +1,4 @@
-// ─── CONFIGURATION ───────────────────────────────────────────────────────────
+// ─── CONFIGURATION ───────
 const CONFIG = {
   firebaseUrl:
     "https://sidequest-movie-night-default-rtdb.europe-west1.firebasedatabase.app",
