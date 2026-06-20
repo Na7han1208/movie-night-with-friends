@@ -380,10 +380,16 @@ function spinWheel() {
     }
     const winnerIdx = Math.floor(Math.random() * n),
       slice = 360 / n;
-    const targetAngle = 360 * 5 + (360 - (winnerIdx * slice + slice / 2));
+    const sliceCenter = winnerIdx * slice + slice / 2;
+    // pointer sits at the TOP of the wheel, which is 270° in canvas's
+    // clockwise-from-3-o'clock angle convention — not 0°.
+    const desiredFinalMod = (((270 - sliceCenter) % 360) + 360) % 360;
     const start = performance.now(),
       dur = 3000,
       startRot = wheelRotation;
+    // account for whatever rotation is already left over from the last spin
+    const neededRemainder = (((desiredFinalMod - startRot) % 360) + 360) % 360;
+    const targetAngle = 360 * 5 + neededRemainder;
     function animate(t) {
       const elapsed = t - start,
         p = Math.min(elapsed / dur, 1),
