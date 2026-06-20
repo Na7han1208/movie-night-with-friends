@@ -1,5 +1,5 @@
 // ─── MOVIE NIGHT GAME ENGINE ─────────────────────────────────────────────────
-// Three selection modes: fishbowl, wheel, theme.
+// Three selection modes: fishbowl, tournament, theme.
 // Flow: waiting -> [submitting] -> voting -> reveal -> rating
 
 const ROOM_ID = "room_" + getOrMakeRoom();
@@ -318,114 +318,118 @@ async function runSelectionAnimation(picked) {
   });
 }
 
-/* ══ WHEEL MODE ══ */
-let wheelCvs = null,
-  wheelCtx = null,
-  wheelEntries = [],
-  wheelRotation = 0;
-function drawWheel(rotationDeg) {
-  wheelCvs = document.getElementById("wheelCanvas");
-  if (!wheelCvs) return;
-  const size = Math.min(
-    wheelCvs.parentElement.clientWidth,
-    wheelCvs.parentElement.clientHeight,
-    460,
-  );
-  wheelCvs.width = size;
-  wheelCvs.height = size;
-  wheelCtx = wheelCvs.getContext("2d");
-  const cx = size / 2,
-    cy = size / 2,
-    r = size / 2 - 8,
-    n = wheelEntries.length || 1,
-    slice = (2 * Math.PI) / n;
-  wheelCtx.clearRect(0, 0, size, size);
-  wheelCtx.save();
-  wheelCtx.translate(cx, cy);
-  wheelCtx.rotate((rotationDeg * Math.PI) / 180);
-  wheelEntries.forEach((label, i) => {
-    const start = i * slice,
-      end = start + slice;
-    wheelCtx.beginPath();
-    wheelCtx.moveTo(0, 0);
-    wheelCtx.arc(0, 0, r, start, end);
-    wheelCtx.closePath();
-    wheelCtx.fillStyle = PALETTE[i % PALETTE.length];
-    wheelCtx.fill();
-    wheelCtx.strokeStyle = "#18181b";
-    wheelCtx.lineWidth = 2;
-    wheelCtx.stroke();
-    wheelCtx.save();
-    wheelCtx.rotate(start + slice / 2);
-    wheelCtx.textAlign = "right";
-    wheelCtx.fillStyle = "#fff";
-    let fs = Math.max(11, Math.min(15, 260 / n));
-    wheelCtx.font = `600 ${fs}px Inter, sans-serif`;
-    const label2 = label.length > 22 ? label.slice(0, 20) + "…" : label;
-    wheelCtx.fillText(label2, r - 12, 4);
-    wheelCtx.restore();
-  });
-  wheelCtx.restore();
-  wheelCtx.beginPath();
-  wheelCtx.arc(cx, cy, size * 0.06, 0, Math.PI * 2);
-  wheelCtx.fillStyle = "#18181b";
-  wheelCtx.fill();
-}
-function spinWheel() {
-  return new Promise((resolve) => {
-    const n = wheelEntries.length;
-    if (!n) {
-      resolve(null);
-      return;
-    }
-    const winnerIdx = Math.floor(Math.random() * n),
-      slice = 360 / n;
-    const sliceCenter = winnerIdx * slice + slice / 2;
-    // pointer sits at the TOP of the wheel, which is 270° in canvas's
-    // clockwise-from-3-o'clock angle convention — not 0°.
-    const desiredFinalMod = (((270 - sliceCenter) % 360) + 360) % 360;
-    const start = performance.now(),
-      dur = 3000,
-      startRot = wheelRotation;
-    // account for whatever rotation is already left over from the last spin
-    const neededRemainder = (((desiredFinalMod - startRot) % 360) + 360) % 360;
-    const targetAngle = 360 * 5 + neededRemainder;
-    function animate(t) {
-      const elapsed = t - start,
-        p = Math.min(elapsed / dur, 1),
-        eased = 1 - Math.pow(1 - p, 3);
-      const current = startRot + targetAngle * eased;
-      drawWheel(current);
-      if (p < 1) requestAnimationFrame(animate);
-      else {
-        wheelRotation = current % 360;
-        const resultEl = document.getElementById("wheelResultLabel");
-        if (resultEl) resultEl.textContent = wheelEntries[winnerIdx];
-        resolve(wheelEntries[winnerIdx]);
-      }
-    }
-    requestAnimationFrame(animate);
-  });
-}
-async function runWheelSelection(allMovies) {
-  let pool = shuffle([...new Set(allMovies)]);
-  const picks = [];
-  document.getElementById("fishStageWrap").style.display = "none";
-  document.getElementById("wheelStageWrap").style.display = "flex";
-  for (let i = 0; i < 3 && pool.length; i++) {
-    wheelEntries = pool;
-    drawWheel(wheelRotation);
-    document.getElementById("wheelSpinLabel").textContent =
-      `Spin ${i + 1} of 3`;
-    await new Promise((r) => setTimeout(r, 450));
-    const winner = await spinWheel();
-    picks.push(winner);
-    pool = pool.filter((m) => m !== winner);
-    await new Promise((r) => setTimeout(r, 1000));
+/* ══ TOURNAMENT MODE ══ */
+// Knockout bracket: pair movies up, vote each pair, winners advance.
+// Odd one out gets a bye (auto-advances) to keep every round balanced.
+function pairUpRound(pool) {
+  const shuffled = shuffle(pool);
+  const matchups = [];
+  for (let i = 0; i < shuffled.length; i += 2) {
+    if (i + 1 < shuffled.length) matchups.push([shuffled[i], shuffled[i + 1]]);
+    else matchups.push([shuffled[i], null]); // bye
   }
-  document.getElementById("wheelStageWrap").style.display = "none";
-  document.getElementById("fishStageWrap").style.display = "flex";
-  return picks;
+  return matchups;
+}
+function totalRoundsNeeded(n) {
+  return Math.max(1, Math.ceil(Math.log2(Math.max(n, 1))));
+}
+async function hostStartTournament(allMovies) {
+  let pool = shuffle([...new Set(allMovies)]);
+  const defaults = ["The Dark Knight", "Inception", "Parasite", "Pulp Fiction"];
+  while (pool.length < 2)
+    pool.push(defaults[Math.floor(Math.random() * defaults.length)]);
+  const matchups = pairUpRound(pool);
+  const votes = {};
+  pool.forEach((m) => (votes[m] = 0));
+  const ns = {
+    ...G,
+    phase: "voting",
+    p2Start: Date.now(),
+    movies: pool,
+    votes,
+    voters: {},
+    bracket: {
+      round: 1,
+      totalRounds: totalRoundsNeeded(pool.length),
+      matchups,
+    },
+  };
+  await sp("/state", ns);
+  G = ns;
+  hostVote();
+}
+async function hostAdvanceRound() {
+  clearAll();
+  G = (await gp("/state")) || G;
+  const matchups = (G.bracket && G.bracket.matchups) || [];
+  const vt = G.votes || {};
+  const winners = matchups.map(([a, b]) => {
+    if (b === null) return a; // bye — advances automatically
+    const va = vt[a] || 0,
+      vb = vt[b] || 0;
+    if (va === vb) return Math.random() < 0.5 ? a : b; // tie -> coin flip
+    return va > vb ? a : b;
+  });
+  if (winners.length <= 1) {
+    const champion = winners[0];
+    const ns = {
+      ...G,
+      phase: "reveal",
+      movies: [champion],
+      votes: { [champion]: 1 },
+    };
+    await sp("/state", ns);
+    G = ns;
+    showReveal();
+    return;
+  }
+  const nextMatchups = pairUpRound(winners);
+  const newRound = (G.bracket.round || 1) + 1;
+  const votes = {};
+  winners.forEach((m) => (votes[m] = 0));
+  const ns = {
+    ...G,
+    votes,
+    voters: {},
+    bracket: { ...G.bracket, round: newRound, matchups: nextMatchups },
+    p2Start: Date.now(),
+  };
+  await sp("/state", ns);
+  G = ns;
+  hostVote();
+}
+function renderBracketView() {
+  const b = G.bracket || { round: 1, totalRounds: 1, matchups: [] };
+  const vt = G.votes || {};
+  const vc = G.voters
+    ? Object.keys(G.voters).filter((k) => G.voters[k]).length
+    : 0;
+  document.getElementById("vCount").textContent =
+    `${vc} voter${vc === 1 ? "" : "s"}`;
+  document.getElementById("vBarsArea").innerHTML = `
+    <p class="caps" style="margin-bottom:.9rem;">Round ${b.round} of ${b.totalRounds}</p>
+    <div class="bracket-grid">
+      ${b.matchups
+        .map(([a, bb]) => {
+          if (bb === null) {
+            return `<div class="matchup-card bye-card">
+              <div class="matchup-side">${esc(a)}</div>
+              <div class="matchup-vs">BYE</div>
+            </div>`;
+          }
+          const va = vt[a] || 0,
+            vb = vt[bb] || 0,
+            total = va + vb || 1;
+          const pa = Math.round((va / total) * 100),
+            pb = 100 - pa;
+          return `<div class="matchup-card">
+            <div class="matchup-side ${va > vb ? "leading" : ""}">${esc(a)}<span class="matchup-pct">${pa}%</span></div>
+            <div class="matchup-vs">VS</div>
+            <div class="matchup-side ${vb > va ? "leading" : ""}">${esc(bb)}<span class="matchup-pct">${pb}%</span></div>
+          </div>`;
+        })
+        .join("")}
+    </div>`;
 }
 
 /* ══ THEME-FIRST MODE ══ */
@@ -551,7 +555,7 @@ function renderModeSelector() {
   if (!row) return;
   const modes = [
     { id: "fishbowl", ico: "🐠", label: "Fishbowl" },
-    { id: "wheel", ico: "🎡", label: "Wheel" },
+    { id: "tournament", ico: "🏆", label: "Tournament" },
     { id: "theme", ico: "🎭", label: "Theme First" },
   ];
   row.innerHTML = modes
@@ -620,7 +624,6 @@ function hostSubmitScreen() {
   show("sSubmit");
   seenMovies = new Set();
   document.getElementById("fishStageWrap").style.display = "flex";
-  document.getElementById("wheelStageWrap").style.display = "none";
   setTimeout(() => {
     initFish();
     if (G.submissions)
@@ -684,6 +687,12 @@ async function hostStartVoting() {
   let all = [];
   const subs = G.submissions ? Object.values(G.submissions) : [];
   subs.forEach((s) => (s.movies || []).forEach((m) => all.push(m)));
+
+  if (G.mode === "tournament") {
+    await hostStartTournament(all);
+    return;
+  }
+
   const defaults = [
     "The Dark Knight",
     "Inception",
@@ -694,10 +703,7 @@ async function hostStartVoting() {
   while (all.length < 3)
     all.push(defaults[Math.floor(Math.random() * defaults.length)]);
 
-  let picked =
-    G.mode === "wheel"
-      ? await runWheelSelection(all)
-      : shuffle(all).slice(0, 3);
+  let picked = shuffle(all).slice(0, 3);
 
   const votes = {};
   picked.forEach((m) => (votes[m] = 0));
@@ -711,7 +717,7 @@ async function hostStartVoting() {
   };
   await sp("/state", ns);
   G = ns;
-  if (G.mode !== "wheel") await runSelectionAnimation(picked);
+  await runSelectionAnimation(picked);
   if (raf) cancelAnimationFrame(raf);
   hostVote();
 }
@@ -719,7 +725,7 @@ async function hostStartVoting() {
 /* ══ HOST VOTE ══ */
 function hostVote() {
   show("sHostVote");
-  renderVoteBars();
+  renderVoteScreen();
   tick(() => {
     if (G.p2Start) updateVoteRing();
   }, 1000);
@@ -729,12 +735,30 @@ function hostVote() {
       clearAll();
       return;
     }
-    renderVoteBars();
+    renderVoteScreen();
     if (G.p2Start && (Date.now() - G.p2Start) / 1000 >= P2) {
       clearAll();
-      await hostEndVoting();
+      if (G.mode === "tournament") await hostAdvanceRound();
+      else await hostEndVoting();
     }
   }, 2000);
+}
+function renderVoteScreen() {
+  if (G.mode === "tournament") renderBracketView();
+  else renderVoteBars();
+  updateVoteActionButton();
+}
+function updateVoteActionButton() {
+  const btn = document.getElementById("voteActionBtn");
+  if (!btn) return;
+  if (G.mode === "tournament") {
+    const isFinal = ((G.bracket && G.bracket.matchups) || []).length === 1;
+    btn.textContent = isFinal ? "Finish Tournament" : "Next Round →";
+    btn.onclick = () => hostAdvanceRound();
+  } else {
+    btn.textContent = "Reveal";
+    btn.onclick = () => hostEndVoting();
+  }
 }
 function renderVoteBars() {
   const mv = G.movies || [],
@@ -1095,8 +1119,14 @@ async function mRemove(idx) {
     movies: [...myMovies],
   });
 }
+let myPicks = {},
+  myBracketRound = null;
 function mVoteScreen() {
   if (mPoll) clearInterval(mPoll);
+  if (G.mode === "tournament") {
+    mBracketScreen();
+    return;
+  }
   const mv = G.movies || [];
   myVotes = {};
   lastSent = {};
@@ -1116,6 +1146,62 @@ function mVoteScreen() {
     </div>
     <div class="mv-status" id="mvStatus">Tap to vote</div>`;
   pollUntil(["reveal", "rating"]);
+}
+function mBracketScreen() {
+  if (mPoll) clearInterval(mPoll);
+  const b = G.bracket || { round: 1, totalRounds: 1, matchups: [] };
+  if (myBracketRound !== b.round) {
+    myPicks = {};
+    myBracketRound = b.round;
+  }
+  document.getElementById("mContent").innerHTML = `
+    <div class="m-phase-badge"><div class="m-phase-dot" style="background:${PALETTE[3]}"></div><span class="m-phase-label">vote</span></div>
+    <p style="font-size:.82rem;color:var(--w3);margin-bottom:1rem;">as ${esc(myName)}</p>
+    <p class="caps" style="margin-bottom:1rem;">Round ${b.round} of ${b.totalRounds}</p>
+    <div class="m-bracket-list">
+      ${b.matchups
+        .map((m, i) => {
+          const [a, bb] = m;
+          if (bb === null)
+            return `<div class="m-matchup-card"><div class="m-matchup-bye">${esc(a)} advances automatically</div></div>`;
+          return `<div class="m-matchup-card" data-idx="${i}">
+            <button type="button" class="m-matchup-side ${myPicks[i] === a ? "picked" : ""}" data-movie="${esc(a)}">${esc(a)}</button>
+            <div class="m-matchup-vs">vs</div>
+            <button type="button" class="m-matchup-side ${myPicks[i] === bb ? "picked" : ""}" data-movie="${esc(bb)}">${esc(bb)}</button>
+          </div>`;
+        })
+        .join("")}
+    </div>
+    <div class="mv-status" id="mvStatus">Tap your pick in each matchup</div>`;
+  document.querySelectorAll(".m-matchup-side").forEach((btn) => {
+    btn.addEventListener("click", () =>
+      mPickMatchup(
+        +btn.closest(".m-matchup-card").dataset.idx,
+        btn.dataset.movie,
+      ),
+    );
+  });
+  pollUntil(["reveal", "rating"]);
+}
+async function mPickMatchup(idx, movie) {
+  const prev = myPicks[idx];
+  if (prev === movie) return;
+  myPicks[idx] = movie;
+  document
+    .querySelectorAll(`.m-matchup-card[data-idx="${idx}"] .m-matchup-side`)
+    .forEach((btn) =>
+      btn.classList.toggle("picked", btn.dataset.movie === movie),
+    );
+  const key = myName.replace(/[.#$/\[\]]/g, "_");
+  const cur = (await gp("/state/votes")) || {};
+  const patch = {};
+  if (prev) patch[prev] = (cur[prev] || 0) - 1;
+  patch[movie] =
+    (patch[movie] !== undefined ? patch[movie] : cur[movie] || 0) + 1;
+  await pp("/state/voters", { [key]: true });
+  await pp("/state/votes", patch);
+  const st = document.getElementById("mvStatus");
+  if (st) st.textContent = "Picks update live — change anytime";
 }
 async function mToggle(idx, dir) {
   const m = G.movies[idx];

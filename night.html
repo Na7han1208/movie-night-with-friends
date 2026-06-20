@@ -58,7 +58,7 @@
       </div>
     </div>
 
-    <!-- SUBMISSIONS (fishbowl OR wheel) -->
+    <!-- SUBMISSIONS (fishbowl drop-in, shared by fishbowl + tournament modes) -->
     <div class="scr" id="sSubmit">
       <div class="submit-header">
         <div class="submit-headline">Drop your movies in</div>
@@ -71,24 +71,6 @@
       <div class="fish-stage" id="fishStageWrap">
         <canvas id="fishCanvas"></canvas>
         <div class="fish-timer" id="fishTimer">3:00</div>
-      </div>
-
-      <div class="wheel-stage" id="wheelStageWrap" style="display: none">
-        <div
-          style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.4rem;
-          "
-        >
-          <p class="caps" id="wheelSpinLabel">Spin 1 of 3</p>
-          <div class="wheel-wrap">
-            <div class="wheel-pointer"></div>
-            <canvas id="wheelCanvas"></canvas>
-            <div class="wheel-result" id="wheelResultLabel"></div>
-          </div>
-        </div>
       </div>
 
       <div class="submit-footer">
@@ -130,7 +112,13 @@
           <div class="vote-ring-num" id="vRingTime">1:30</div>
         </div>
         <div class="vote-btns">
-          <button class="btn-p btn-sm" onclick="hostEndVoting()">Reveal</button>
+          <button
+            class="btn-p btn-sm"
+            id="voteActionBtn"
+            onclick="hostEndVoting()"
+          >
+            Reveal
+          </button>
           <button class="btn-s btn-sm" onclick="hostReset()">Reset</button>
         </div>
       </div>
