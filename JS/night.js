@@ -358,18 +358,77 @@ async function hostStartTournament(allMovies) {
   G = ns;
   hostVote();
 }
+function runBracketCoinFlip(a, b) {
+  return new Promise((resolve) => {
+    document.getElementById("vBarsArea").innerHTML = `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;text-align:center;">
+        <p class="caps">It's a tie — flipping a coin</p>
+        <canvas id="bracketCoinCanvas" width="140" height="140"></canvas>
+        <p id="bracketCoinStatus" style="font-size:.96rem;color:var(--w2);">deciding between <strong style="color:var(--w1)">${esc(a)}</strong> vs <strong style="color:var(--w1)">${esc(b)}</strong>...</p>
+      </div>`;
+    const c = document.getElementById("bracketCoinCanvas"),
+      cx = c.getContext("2d");
+    let frame = 0,
+      totalFrames = 90,
+      side = true;
+    const winner = Math.random() < 0.5 ? a : b;
+    function drawCoin(scaleX) {
+      cx.clearRect(0, 0, 140, 140);
+      cx.save();
+      cx.translate(70, 70);
+      cx.scale(scaleX, 1);
+      cx.beginPath();
+      cx.arc(0, 0, 54, 0, Math.PI * 2);
+      cx.fillStyle = side ? "#e8453c" : "#f5b942";
+      cx.fill();
+      if (Math.abs(scaleX) > 0.15) {
+        cx.fillStyle = "#fff";
+        cx.font = `700 24px Inter`;
+        cx.textAlign = "center";
+        cx.textBaseline = "middle";
+        cx.fillText(side ? "?" : "!", 0, 1);
+      }
+      cx.restore();
+    }
+    const anim = setInterval(() => {
+      frame++;
+      const progress = frame / totalFrames,
+        speed = progress < 0.65 ? 1 : 1 - ((progress - 0.65) / 0.35) * 0.88;
+      const angle = frame * speed * 0.28,
+        scaleX = Math.cos(angle);
+      if (Math.cos(angle - speed * 0.28) * scaleX < 0) side = !side;
+      drawCoin(scaleX);
+      if (frame >= totalFrames) {
+        clearInterval(anim);
+        drawCoin(1);
+        const statusEl = document.getElementById("bracketCoinStatus");
+        if (statusEl)
+          statusEl.innerHTML = `<strong style="color:var(--w1)">${esc(winner)}</strong> wins the flip`;
+        setTimeout(() => resolve(winner), 900);
+      }
+    }, 16);
+  });
+}
 async function hostAdvanceRound() {
   clearAll();
   G = (await gp("/state")) || G;
   const matchups = (G.bracket && G.bracket.matchups) || [];
   const vt = G.votes || {};
-  const winners = matchups.map(([a, b]) => {
-    if (b === null) return a; // bye — advances automatically
+  const winners = [];
+  for (const [a, b] of matchups) {
+    if (b === null) {
+      winners.push(a); // bye — advances automatically
+      continue;
+    }
     const va = vt[a] || 0,
       vb = vt[b] || 0;
-    if (va === vb) return Math.random() < 0.5 ? a : b; // tie -> coin flip
-    return va > vb ? a : b;
-  });
+    if (va === vb) {
+      const winner = await runBracketCoinFlip(a, b); // tie -> visible coin flip
+      winners.push(winner);
+    } else {
+      winners.push(va > vb ? a : b);
+    }
+  }
   if (winners.length <= 1) {
     const champion = winners[0];
     const ns = {
@@ -1181,7 +1240,25 @@ function mBracketScreen() {
       ),
     );
   });
-  pollUntil(["reveal", "rating"]);
+  pollBracketRound();
+}
+function pollBracketRound() {
+  if (mPoll) clearInterval(mPoll);
+  mPoll = setInterval(async () => {
+    const st = await gp("/state");
+    if (!st) return;
+    G = st;
+    if (st.phase !== "voting") {
+      clearInterval(mPoll);
+      mobileInit();
+      return;
+    }
+    const liveRound = (st.bracket && st.bracket.round) || 1;
+    if (liveRound !== myBracketRound) {
+      clearInterval(mPoll);
+      mBracketScreen(); // a new round started — re-render with the new matchups
+    }
+  }, 2000);
 }
 async function mPickMatchup(idx, movie) {
   const prev = myPicks[idx];
