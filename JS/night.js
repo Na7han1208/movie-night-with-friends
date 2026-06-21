@@ -14,6 +14,32 @@ function getOrMakeRoom() {
 }
 sessionStorage.setItem("mn_room", ROOM_ID.replace("room_", ""));
 
+// Remember who you are across page reloads / leaving & coming back, scoped to this room
+const SESSION_KEY = `mn_session_${ROOM_ID}`;
+function loadStoredIdentity() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && data.name) myName = data.name;
+  } catch (e) {}
+}
+function storeIdentity() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ name: myName }));
+  } catch (e) {}
+}
+
+// Persistent room-code badge, visible on every screen for the whole night
+const roomBadgeEl = document.getElementById("globalRoomCode");
+if (roomBadgeEl) {
+  if (new URLSearchParams(location.search).has("vote")) {
+    roomBadgeEl.style.display = "none"; // not needed once you're already in, on a phone
+  } else {
+    roomBadgeEl.textContent = `Room: ${ROOM_ID.replace("room_", "").toUpperCase()}`;
+  }
+}
+
 const IS_MOBILE = new URLSearchParams(location.search).has("vote");
 const PRESET_THEME = new URLSearchParams(location.search).get("theme");
 const P1 = 59,
@@ -1023,18 +1049,18 @@ let myName = "",
 async function mobileInit() {
   show("sMobile");
   G = (await gp("/state")) || {};
-  const ph = G.phase || "waiting";
-  if (ph === "waiting") {
-    joined ? mWait() : mJoinScreen();
-  } else if (ph === "submitting") {
-    mSubmitScreen();
-  } else if (ph === "voting") {
-    mVoteScreen();
-  } else if (ph === "reveal") {
-    mRevealScreen();
-  } else if (ph === "rating") {
-    mRatingScreen();
+  if (!myName) loadStoredIdentity();
+  if (!myName) {
+    mJoinScreen(); // no identity yet — ask for a name no matter what phase we're in
+    return;
   }
+  joined = true;
+  const ph = G.phase || "waiting";
+  if (ph === "waiting") mWait();
+  else if (ph === "submitting") mSubmitScreen();
+  else if (ph === "voting") mVoteScreen();
+  else if (ph === "reveal") mRevealScreen();
+  else if (ph === "rating") mRatingScreen();
 }
 function mJoinScreen() {
   document.getElementById("mContent").innerHTML = `
@@ -1046,7 +1072,6 @@ function mJoinScreen() {
   document.getElementById("mName").addEventListener("keydown", (e) => {
     if (e.key === "Enter") mJoin();
   });
-  pollUntil(["submitting", "voting", "reveal", "rating"]);
 }
 async function mJoin() {
   const name = (document.getElementById("mName").value || "").trim();
@@ -1055,10 +1080,12 @@ async function mJoin() {
     return;
   }
   myName = name;
+  storeIdentity();
   const key = name.replace(/[.#$/\[\]]/g, "_");
-  await sp(`/state/submissions/${key}`, { name, movies: [] });
+  const existing = await gp(`/state/submissions/${key}`);
+  if (!existing) await sp(`/state/submissions/${key}`, { name, movies: [] });
   joined = true;
-  mWait();
+  mobileInit(); // now route straight to whatever phase is actually live
 }
 function mWait() {
   document.getElementById("mContent").innerHTML = `
@@ -1080,6 +1107,15 @@ function getTakenMovies() {
 }
 function mSubmitScreen() {
   if (mPoll) clearInterval(mPoll);
+  const myKey = myName.replace(/[.#$/\[\]]/g, "_");
+  if (
+    !myMovies.length &&
+    G.submissions &&
+    G.submissions[myKey] &&
+    G.submissions[myKey].movies
+  ) {
+    myMovies = [...G.submissions[myKey].movies]; // restore picks after a refresh/rejoin
+  }
   document.getElementById("mContent").innerHTML = `
     <div class="m-phase-badge"><div class="m-phase-dot" style="background:${PALETTE[2]}"></div><span class="m-phase-label">add your picks</span></div>
     <p style="font-size:.82rem;color:var(--w3);margin-bottom:1.4rem;">as ${esc(myName)}</p>
