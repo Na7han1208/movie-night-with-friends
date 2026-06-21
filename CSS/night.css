@@ -24,28 +24,6 @@ body {
   color: var(--w1);
 }
 
-.room-code-badge {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  z-index: 50;
-  font-family: var(--fm);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--w2);
-  background: var(--s2);
-  border: 1px solid var(--line2);
-  border-radius: 100px;
-  padding: 8px 16px;
-}
-@media (max-width: 520px) {
-  .room-code-badge {
-    font-size: 0.64rem;
-    padding: 6px 12px;
-  }
-}
-
 .scr {
   position: fixed;
   inset: 0;
