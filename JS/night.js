@@ -551,18 +551,16 @@ async function hostLobby() {
     Math.round(Math.min(window.innerWidth * 0.3, window.innerHeight * 0.38)),
     320,
   );
-  try {
-    new QRCode(qrBox, {
-      text: vUrl.toString(),
-      width: sz,
-      height: sz,
-      colorDark: "#000",
-      colorLight: "#fff",
-      correctLevel: QRCode.CorrectLevel.M,
-    });
-  } catch (e) {
+  const qrImg = document.createElement("img");
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${sz}x${sz}&data=${encodeURIComponent(vUrl.toString())}`;
+  qrImg.width = sz;
+  qrImg.height = sz;
+  qrImg.alt = "Scan to join";
+  qrImg.style.display = "block";
+  qrImg.onerror = () => {
     qrBox.textContent = "QR error";
-  }
+  };
+  qrBox.appendChild(qrImg);
   document.getElementById("roomCodeLabel").textContent =
     `Room code: ${ROOM_ID.replace("room_", "").toUpperCase()}`;
 
