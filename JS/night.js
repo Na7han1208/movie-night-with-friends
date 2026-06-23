@@ -997,7 +997,7 @@ function hostRatingScreen() {
 }
 function renderRatingView() {
   const ratingsRaw = G.ratings || {};
-  // filter out anything malformed so a single bad record can never break this screen
+
   const entries = Object.values(ratingsRaw).filter(
     (r) => r && typeof r === "object" && r.name && Number.isFinite(r.stars),
   );
@@ -1011,8 +1011,8 @@ function renderRatingView() {
       entries.length
         ? entries
             .map((r) => {
-              const s = Math.max(0, Math.min(5, Math.round(r.stars)));
-              return `<div class="rating-row"><span class="rating-row-name">${esc(r.name)}</span><span class="rating-row-stars">${"★".repeat(s)}${"☆".repeat(5 - s)}</span></div>`;
+              const s = Math.max(0, Math.min(5, r.stars));
+              return `<div class="rating-row"><span class="rating-row-name">${esc(r.name)}</span><span class="rating-row-stars">${s}★</span></div>`;
             })
             .join("")
         : '<p class="caps" style="text-align:center;">Waiting for ratings from your phones...</p>'
@@ -1380,52 +1380,64 @@ function mRatingScreen() {
       ? G.ratings[key].stars
       : 0;
   let picked = existingStars;
-  const starsHTML = (p) =>
-    [1, 2, 3, 4, 5]
+
+  function fillPct(starIdx, value) {
+    if (value >= starIdx) return 100;
+    if (value >= starIdx - 0.5) return 50;
+    return 0;
+  }
+  function starsHTML(value) {
+    return [1, 2, 3, 4, 5]
       .map(
-        (n) =>
-          `<span class="star-pick ${n <= p ? "on" : ""}" data-n="${n}">★</span>`,
+        (i) => `<span class="star-half" data-idx="${i}">
+        <span class="star-half-empty">★</span>
+        <span class="star-half-fill" style="width:${fillPct(i, value)}%"><span>★</span></span>
+        <span class="star-hit star-hit-l" data-v="${i - 0.5}"></span>
+        <span class="star-hit star-hit-r" data-v="${i}"></span>
+      </span>`,
       )
       .join("");
+  }
+  function statusText(value) {
+    return value
+      ? `✓ Submitted — ${value}★. Tap a star to change it.`
+      : "Tap a star to rate — half stars work too";
+  }
+
   document.getElementById("mContent").innerHTML = `
     <div class="m-state">
       <div class="m-label" style="margin-bottom:.6rem;">How was it?</div>
       <h3>${esc(G.winner || "...")}</h3>
       <div class="star-pick-row" id="starPickRow">${starsHTML(picked)}</div>
-      <button class="m-btn" id="submitRatingBtn">${picked ? "Update Rating" : "Submit Rating"}</button>
-      <p class="m-rating-status" id="mRatingStatus">${
-        picked
-          ? `✓ Submitted — ${picked}★. Tap a different star to change it.`
-          : "Pick a star rating above"
-      }</p>
+      <p class="m-rating-status" id="mRatingStatus">${statusText(picked)}</p>
     </div>`;
+
   const row = document.getElementById("starPickRow");
-  const btn = document.getElementById("submitRatingBtn");
   const status = document.getElementById("mRatingStatus");
-  row.addEventListener("click", (e) => {
-    const star = e.target.closest(".star-pick");
-    if (!star) return;
-    picked = +star.dataset.n;
-    row
-      .querySelectorAll(".star-pick")
-      .forEach((s) => s.classList.toggle("on", +s.dataset.n <= picked));
-    btn.textContent = "Submit Rating";
-    status.textContent = `${picked}★ selected — tap Submit to save`;
-  });
-  btn.addEventListener("click", async () => {
-    if (!picked) {
-      alert("Tap a star rating first!");
-      return;
-    }
+
+  async function setRating(value) {
+    picked = value;
+    row.querySelectorAll(".star-half").forEach((el) => {
+      const idx = +el.dataset.idx;
+      el.querySelector(".star-half-fill").style.width =
+        `${fillPct(idx, picked)}%`;
+    });
+    status.textContent = "Saving...";
     if (!myName) {
-      alert("We lost track of who you are — rejoining now.");
+      status.textContent = "We lost track of who you are — rejoining now.";
       mobileInit();
       return;
     }
     await sp(`/state/ratings/${key}`, { name: myName, stars: picked });
-    btn.textContent = "Update Rating";
-    status.textContent = `✓ Submitted — ${picked}★. Tap a different star to change it.`;
+    status.textContent = statusText(picked);
+  }
+
+  row.addEventListener("click", (e) => {
+    const hit = e.target.closest(".star-hit");
+    if (!hit) return;
+    setRating(+hit.dataset.v);
   });
+
   pollAfterRating();
 }
 function pollAfterRating() {

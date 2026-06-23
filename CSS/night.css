@@ -944,17 +944,42 @@ body {
   gap: 8px;
   margin: 1.5rem 0;
 }
-.star-pick {
+.star-half {
+  position: relative;
+  display: inline-block;
+  width: 1em;
   font-size: 2.3rem;
+  line-height: 1;
+}
+.star-half-empty {
+  display: block;
   color: var(--w4);
-  transition:
-    color 0.15s,
-    transform 0.1s;
+}
+.star-half-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  color: var(--gold);
+  white-space: nowrap;
+  transition: width 0.15s ease;
+}
+.star-half-fill > span {
+  display: block;
+}
+.star-hit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
   cursor: pointer;
 }
-.star-pick.on {
-  color: var(--gold);
-  transform: scale(1.08);
+.star-hit-l {
+  left: 0;
+}
+.star-hit-r {
+  right: 0;
 }
 .m-rating-status {
   font-size: 0.84rem;
