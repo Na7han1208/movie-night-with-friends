@@ -956,6 +956,12 @@ body {
   color: var(--gold);
   transform: scale(1.08);
 }
+.m-rating-status {
+  font-size: 0.84rem;
+  color: var(--w3);
+  text-align: center;
+  margin-top: 0.9rem;
+}
 
 @media (max-width: 900px) {
   #sLobby {

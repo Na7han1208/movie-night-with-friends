@@ -14,6 +14,21 @@ function getOrMakeRoom() {
 }
 sessionStorage.setItem("mn_room", ROOM_ID.replace("room_", ""));
 
+const SESSION_KEY = `mn_session_${ROOM_ID}`;
+function loadStoredIdentity() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && data.name) myName = data.name;
+  } catch (e) {}
+}
+function storeIdentity() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ name: myName }));
+  } catch (e) {}
+}
+
 const IS_MOBILE = new URLSearchParams(location.search).has("vote");
 const PRESET_THEME = new URLSearchParams(location.search).get("theme");
 const P1 = 59,
@@ -962,7 +977,9 @@ async function hostStartRating() {
   hostRatingScreen();
 }
 function avgRating(ratingsObj) {
-  const vals = Object.values(ratingsObj || {}).map((r) => r.stars);
+  const vals = Object.values(ratingsObj || {})
+    .filter((r) => r && typeof r === "object" && Number.isFinite(r.stars))
+    .map((r) => Math.max(0, Math.min(5, r.stars)));
   if (!vals.length) return 0;
   return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
@@ -979,15 +996,27 @@ function hostRatingScreen() {
   }, 2000);
 }
 function renderRatingView() {
-  const ratings = G.ratings || {};
-  const entries = Object.values(ratings);
-  const avg = avgRating(ratings);
+  const ratingsRaw = G.ratings || {};
+  // filter out anything malformed so a single bad record can never break this screen
+  const entries = Object.values(ratingsRaw).filter(
+    (r) => r && typeof r === "object" && r.name && Number.isFinite(r.stars),
+  );
+  const avg = avgRating(ratingsRaw);
   document.getElementById("ratingWrap").innerHTML = `
     <div class="reveal-eyebrow">Rate tonight's watch</div>
     <div class="rating-movie">${esc(G.winner || "...")}</div>
     <div class="rating-avg">${avg ? avg.toFixed(1) : "—"}<span style="font-size:1.6rem;color:var(--w3);">/5</span></div>
     <div class="rating-avg-sub">${entries.length} rating${entries.length === 1 ? "" : "s"} submitted</div>
-    <div class="rating-list">${entries.length ? entries.map((r) => `<div class="rating-row"><span class="rating-row-name">${esc(r.name)}</span><span class="rating-row-stars">${"★".repeat(r.stars)}${"☆".repeat(5 - r.stars)}</span></div>`).join("") : '<p class="caps" style="text-align:center;">Waiting for ratings from your phones...</p>'}</div>
+    <div class="rating-list">${
+      entries.length
+        ? entries
+            .map((r) => {
+              const s = Math.max(0, Math.min(5, Math.round(r.stars)));
+              return `<div class="rating-row"><span class="rating-row-name">${esc(r.name)}</span><span class="rating-row-stars">${"★".repeat(s)}${"☆".repeat(5 - s)}</span></div>`;
+            })
+            .join("")
+        : '<p class="caps" style="text-align:center;">Waiting for ratings from your phones...</p>'
+    }</div>
     <div class="rating-actions">
       <a href="#" id="ratingLbLink" target="_blank" rel="noopener" class="btn-p">Open Letterboxd ↗</a>
       <button class="btn-s" id="copyRatingBtn">Copy Summary</button>
@@ -1021,18 +1050,18 @@ let myName = "",
 async function mobileInit() {
   show("sMobile");
   G = (await gp("/state")) || {};
-  const ph = G.phase || "waiting";
-  if (ph === "waiting") {
-    joined ? mWait() : mJoinScreen();
-  } else if (ph === "submitting") {
-    mSubmitScreen();
-  } else if (ph === "voting") {
-    mVoteScreen();
-  } else if (ph === "reveal") {
-    mRevealScreen();
-  } else if (ph === "rating") {
-    mRatingScreen();
+  if (!myName) loadStoredIdentity();
+  if (!myName) {
+    mJoinScreen();
+    return;
   }
+  joined = true;
+  const ph = G.phase || "waiting";
+  if (ph === "waiting") mWait();
+  else if (ph === "submitting") mSubmitScreen();
+  else if (ph === "voting") mVoteScreen();
+  else if (ph === "reveal") mRevealScreen();
+  else if (ph === "rating") mRatingScreen();
 }
 function mJoinScreen() {
   document.getElementById("mContent").innerHTML = `
@@ -1044,7 +1073,6 @@ function mJoinScreen() {
   document.getElementById("mName").addEventListener("keydown", (e) => {
     if (e.key === "Enter") mJoin();
   });
-  pollUntil(["submitting", "voting", "reveal", "rating"]);
 }
 async function mJoin() {
   const name = (document.getElementById("mName").value || "").trim();
@@ -1053,10 +1081,12 @@ async function mJoin() {
     return;
   }
   myName = name;
+  storeIdentity();
   const key = name.replace(/[.#$/\[\]]/g, "_");
-  await sp(`/state/submissions/${key}`, { name, movies: [] });
+  const existing = await gp(`/state/submissions/${key}`);
+  if (!existing) await sp(`/state/submissions/${key}`, { name, movies: [] });
   joined = true;
-  mWait();
+  mobileInit(); // route straight to whatever phase is actually live right now
 }
 function mWait() {
   document.getElementById("mContent").innerHTML = `
@@ -1078,6 +1108,15 @@ function getTakenMovies() {
 }
 function mSubmitScreen() {
   if (mPoll) clearInterval(mPoll);
+  const myKey = myName.replace(/[.#$/\[\]]/g, "_");
+  if (
+    !myMovies.length &&
+    G.submissions &&
+    G.submissions[myKey] &&
+    G.submissions[myKey].movies
+  ) {
+    myMovies = [...G.submissions[myKey].movies]; // restore picks after a refresh/rejoin
+  }
   document.getElementById("mContent").innerHTML = `
     <div class="m-phase-badge"><div class="m-phase-dot" style="background:${PALETTE[2]}"></div><span class="m-phase-label">add your picks</span></div>
     <p style="font-size:.82rem;color:var(--w3);margin-bottom:1.4rem;">as ${esc(myName)}</p>
@@ -1335,15 +1374,34 @@ function mRevealScreen() {
 }
 function mRatingScreen() {
   if (mPoll) clearInterval(mPoll);
-  let picked = 0;
+  const key = myName.replace(/[.#$/\[\]]/g, "_");
+  const existingStars =
+    G.ratings && G.ratings[key] && Number.isFinite(G.ratings[key].stars)
+      ? G.ratings[key].stars
+      : 0;
+  let picked = existingStars;
+  const starsHTML = (p) =>
+    [1, 2, 3, 4, 5]
+      .map(
+        (n) =>
+          `<span class="star-pick ${n <= p ? "on" : ""}" data-n="${n}">★</span>`,
+      )
+      .join("");
   document.getElementById("mContent").innerHTML = `
     <div class="m-state">
       <div class="m-label" style="margin-bottom:.6rem;">How was it?</div>
       <h3>${esc(G.winner || "...")}</h3>
-      <div class="star-pick-row" id="starPickRow">${[1, 2, 3, 4, 5].map((n) => `<span class="star-pick" data-n="${n}">★</span>`).join("")}</div>
-      <button class="m-btn" id="submitRatingBtn">Submit Rating</button>
+      <div class="star-pick-row" id="starPickRow">${starsHTML(picked)}</div>
+      <button class="m-btn" id="submitRatingBtn">${picked ? "Update Rating" : "Submit Rating"}</button>
+      <p class="m-rating-status" id="mRatingStatus">${
+        picked
+          ? `✓ Submitted — ${picked}★. Tap a different star to change it.`
+          : "Pick a star rating above"
+      }</p>
     </div>`;
   const row = document.getElementById("starPickRow");
+  const btn = document.getElementById("submitRatingBtn");
+  const status = document.getElementById("mRatingStatus");
   row.addEventListener("click", (e) => {
     const star = e.target.closest(".star-pick");
     if (!star) return;
@@ -1351,19 +1409,38 @@ function mRatingScreen() {
     row
       .querySelectorAll(".star-pick")
       .forEach((s) => s.classList.toggle("on", +s.dataset.n <= picked));
+    btn.textContent = "Submit Rating";
+    status.textContent = `${picked}★ selected — tap Submit to save`;
   });
-  document
-    .getElementById("submitRatingBtn")
-    .addEventListener("click", async () => {
-      if (!picked) {
-        alert("Tap a star rating first!");
-        return;
-      }
-      const key = myName.replace(/[.#$/\[\]]/g, "_");
-      await sp(`/state/ratings/${key}`, { name: myName, stars: picked });
-      document.getElementById("mContent").innerHTML =
-        `<div class="m-state"><h3>Thanks! ✓</h3><p>Your rating's in.</p></div>`;
-    });
+  btn.addEventListener("click", async () => {
+    if (!picked) {
+      alert("Tap a star rating first!");
+      return;
+    }
+    if (!myName) {
+      alert("We lost track of who you are — rejoining now.");
+      mobileInit();
+      return;
+    }
+    await sp(`/state/ratings/${key}`, { name: myName, stars: picked });
+    btn.textContent = "Update Rating";
+    status.textContent = `✓ Submitted — ${picked}★. Tap a different star to change it.`;
+  });
+  pollAfterRating();
+}
+function pollAfterRating() {
+  // No more phase changes happen after rating — the only thing left to watch for
+  // is the host starting a new night, which wipes the room. Catch that so the
+  // phone doesn't just sit frozen on a finished screen forever.
+  if (mPoll) clearInterval(mPoll);
+  mPoll = setInterval(async () => {
+    const st = await gp("/state");
+    if (!st || !st.phase) {
+      clearInterval(mPoll);
+      myName = "";
+      mobileInit();
+    }
+  }, 3000);
 }
 function pollUntil(phases) {
   if (mPoll) clearInterval(mPoll);
